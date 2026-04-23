@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>GoMico Admin · Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-0:#04110d;
+    --ink-1:#071712;
+    --ink-2:#0a2019;
+    --white:#ffffff;
+    --muted:#b6cac4;
+    --border:rgba(255,255,255,.1);
+    --lime:#92fc05;
+    --lime-deep:#5ba000;
+    --blue:#54a4ff;
+    --gold:#ffc93d;
+    --shadow:0 28px 80px rgba(0,0,0,.34);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    font-family:"DM Sans","Noto Sans Devanagari",system-ui,sans-serif;
+    color:var(--white);
+    background:
+      radial-gradient(circle at 18% 16%, rgba(146,252,5,.14), transparent 24%),
+      radial-gradient(circle at 86% 82%, rgba(84,164,255,.14), transparent 26%),
+      linear-gradient(180deg, #05140f 0%, #04110d 100%);
+    overflow-x:hidden;
+  }
+
+  a{color:inherit;text-decoration:none}
+  button,input,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{position:relative;min-height:100vh}
+  .page::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(rgba(146,252,5,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(146,252,5,.045) 1px, transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(circle at 50% 10%, #000 8%, transparent 85%);
+    opacity:.46;
+    pointer-events:none;
+  }
+
+  .container{
+    position:relative;
+    width:min(1320px, calc(100% - 32px));
+    margin:0 auto;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:30;
+    backdrop-filter:blur(18px);
+    background:rgba(5,23,17,.78);
+    border-bottom:1px solid rgba(52,77,70,.8);
+  }
+
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    min-height:80px;
+    padding:14px 0;
+  }
+
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-logo{display:block;width:179px;max-width:100%;height:auto;flex:0 0 auto}
+  .topbar-center{flex:1;display:flex;justify-content:center}
+  .community-pill{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 18px;border-radius:999px;
+    background:rgba(146,252,5,.12);border:1px solid rgba(146,252,5,.3);color:var(--lime);font-size:14px;font-weight:700;text-align:center;
+  }
+  .topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;padding:0 18px;border-radius:12px;
+    border:1px solid transparent;background:transparent;color:#fff;font-size:14px;font-weight:800;letter-spacing:-.02em;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:var(--lime); color:#05140f}
+  .btn.primary:hover{box-shadow:0 18px 34px rgba(146,252,5,.18)}
+  .btn.dark{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.08)}
+  .btn.dark:hover{background:rgba(255,255,255,.1)}
+  .btn.ghost{border-color:rgba(255,255,255,.12); color:var(--muted)}
+
+  .hero{padding:34px 0 44px}
+  .hero-head{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:28px;
+  }
+  .hero-copy h1{
+    margin:0;font-size:clamp(36px, 5vw, 56px);line-height:1;letter-spacing:-.05em;font-weight:800;
+  }
+  .hero-copy p{
+    margin:12px 0 0;max-width:760px;color:var(--muted);font-size:16px;line-height:1.55;
+  }
+
+  .nav-tabs{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .nav-tab{
+    display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 24px;border-radius:16px;
+    background:rgba(255,255,255,.08);border:1px solid transparent;color:#9ca8ad;font-size:18px;font-weight:800;letter-spacing:-.03em;
+  }
+  .nav-tab.active{
+    background:var(--lime);color:#04110d;box-shadow:0 20px 44px rgba(146,252,5,.14);
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:14px;
+    margin-bottom:22px;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(0, 1.1fr) minmax(340px, .9fr);
+    gap:22px;
+    align-items:start;
+  }
+
+  .panel,.event-card,.stat-card{
+    background:rgba(10,32,25,.9);
+    border:1px solid var(--border);
+    border-radius:28px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(14px);
+  }
+
+  .panel{padding:24px}
+  .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .panel-title{margin:0;font-size:30px;font-weight:800;letter-spacing:-.04em}
+  .panel-copy{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+
+  .stat-card{padding:18px}
+  .stat-card strong{
+    display:block;font-size:34px;line-height:1;letter-spacing:-.05em;font-weight:800;margin-top:10px;
+  }
+  .stat-card span{color:var(--muted);font-size:13px;line-height:1.5}
+
+  .event-grid{display:grid;gap:18px}
+  .event-card{overflow:hidden}
+  .event-image{position:relative;aspect-ratio:16/9;background:#0f221c}
+  .event-image img{width:100%;height:100%;object-fit:cover;display:block}
+  .event-body{padding:18px 18px 20px}
+  .event-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .event-title{margin:0;font-size:24px;font-weight:800;letter-spacing:-.03em}
+  .event-tag{
+    display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 10px;border-radius:999px;
+    background:rgba(146,252,5,.12);border:1px solid rgba(146,252,5,.24);color:var(--lime);font-size:12px;font-weight:800;
+  }
+  .event-desc{margin:12px 0 0;color:var(--muted);line-height:1.65;font-size:14px}
+  .event-meta{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:12px;margin-top:16px}
+  .meta-box{
+    padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+  }
+  .meta-box strong{
+    display:block;margin-bottom:8px;color:#96a6ab;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  }
+  .event-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+
+  .form-grid{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:14px}
+  .field{display:grid;gap:8px}
+  .field.full{grid-column:1 / -1}
+  .field label{color:#dbe8e2;font-size:13px;font-weight:700}
+  .control{
+    width:100%;min-height:48px;padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.12);
+    background:rgba(0,0,0,.12);color:#fff;resize:vertical;
+  }
+  textarea.control{min-height:120px}
+  .helper{color:var(--muted);font-size:13px;line-height:1.5}
+  .upload-box{
+    padding:16px;border-radius:18px;border:1px dashed rgba(146,252,5,.28);background:rgba(146,252,5,.05);
+  }
+  .preview-card{
+    margin-top:10px;display:grid;grid-template-columns:96px minmax(0, 1fr);gap:12px;align-items:center;
+  }
+  .preview-image{
+    width:96px;height:72px;border-radius:14px;overflow:hidden;background:#0f221c;border:1px solid rgba(255,255,255,.08);
+  }
+  .preview-image img{width:100%;height:100%;object-fit:cover;display:block}
+  .empty-state{
+    padding:34px 20px;text-align:center;border-radius:22px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);color:var(--muted);
+  }
+
+  @media (max-width: 1100px){
+    .layout{grid-template-columns:1fr}
+    .hero-head,.panel-head,.topbar-inner{flex-direction:column;align-items:flex-start}
+    .topbar-center,.topbar-actions{width:100%;justify-content:flex-start}
+  }
+
+  @media (max-width: 760px){
+    .stats,.form-grid,.event-meta{grid-template-columns:1fr}
+  }
+
+  @media (max-width: 640px){
+    .container{width:min(100% - 20px, 1320px)}
+    .brand-logo{width:140px}
+    .community-pill,.nav-tabs{width:100%}
+    .nav-tab{min-width:calc(50% - 6px);flex:1;padding:0 18px;font-size:16px}
+    .preview-card{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
+        </a>
+
+        <div class="topbar-center">
+          <div class="community-pill">India's #1 Growing Mechanic Community</div>
+        </div>
+
+        <div class="topbar-actions">
+          <a class="btn primary" href="index.html">Close Admin</a>
+          <a class="btn dark" href="events.html">Public Events</a>
+          <a class="btn ghost" href="login.html">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container hero">
+      <section class="hero-head">
+        <div class="hero-copy">
+          <h1>Admin Events</h1>
+          <p>View all events created in the admin area and publish new ones with title, description, city, state, dates, image, and website details. Everything below is ready for backend wiring later, but already works as a complete frontend flow today.</p>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Admin sections">
+          <a class="nav-tab" href="admin-dashboard.html">Overview</a>
+          <a class="nav-tab" href="admin-users.html">User Management</a>
+          <a class="nav-tab active" href="admin-events.html">Events</a>
+        </nav>
+      </section>
+
+      <section class="stats" id="eventStats"></section>
+
+      <section class="layout">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Created Events</h2>
+              <p class="panel-copy">A live admin list of all event records currently available in this frontend. New events created with the form appear instantly here.</p>
+            </div>
+          </div>
+          <div class="event-grid" id="eventGrid"></div>
+        </div>
+
+        <aside class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Create New Event</h2>
+              <p class="panel-copy">Fill in the event details and publish a new card into the admin events list.</p>
+            </div>
+          </div>
+
+          <form id="eventForm" class="form-grid">
+            <div class="field full">
+              <label for="eventName">Event Name</label>
+              <input class="control" id="eventName" name="eventName" type="text" placeholder="GoMico EV Service Camp" required />
+            </div>
+
+            <div class="field full">
+              <label for="eventDescription">Description</label>
+              <textarea class="control" id="eventDescription" name="eventDescription" placeholder="Describe the event, agenda, and who should attend." required></textarea>
+            </div>
+
+            <div class="field">
+              <label for="eventCity">City</label>
+              <input class="control" id="eventCity" name="eventCity" type="text" placeholder="Indore" required />
+            </div>
+
+            <div class="field">
+              <label for="eventState">State</label>
+              <input class="control" id="eventState" name="eventState" type="text" placeholder="Madhya Pradesh" required />
+            </div>
+
+            <div class="field">
+              <label for="eventStart">Start Date</label>
+              <input class="control" id="eventStart" name="eventStart" type="date" required />
+            </div>
+
+            <div class="field">
+              <label for="eventEnd">End Date</label>
+              <input class="control" id="eventEnd" name="eventEnd" type="date" required />
+            </div>
+
+            <div class="field full upload-box">
+              <label for="eventImage">Event Image</label>
+              <input class="control" id="eventImage" name="eventImage" type="url" placeholder="Paste event image URL" />
+              <div class="helper">Use an image URL for now. If left empty, a Gomico fallback visual will be used automatically.</div>
+              <div class="preview-card">
+                <div class="preview-image"><img id="imagePreview" alt="Event preview image" src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80"></div>
+                <div class="helper" id="previewText">Image preview updates as soon as you paste a valid URL.</div>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label for="eventWebsite">Event Website</label>
+              <input class="control" id="eventWebsite" name="eventWebsite" type="url" placeholder="https://gomico.in/events/ev-service-camp" required />
+            </div>
+
+            <div class="field full" style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn primary" type="submit">Create Event</button>
+              <button class="btn ghost" type="reset">Reset Form</button>
+            </div>
+          </form>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+<script>
+  const fallbackImage = "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80";
+  const events = [
+    {
+      id: "EV-2026-01",
+      name: "GoMico EV Service Camp",
+      description: "A hands-on service workshop focused on EV diagnostics, workshop readiness, and community learning for independent garages.",
+      city: "Indore",
+      state: "Madhya Pradesh",
+      startDate: "2026-05-11",
+      endDate: "2026-05-12",
+      image: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+      website: "https://gomico.in/events/ev-service-camp"
+    },
+    {
+      id: "EV-2026-02",
+      name: "Owner Growth Summit",
+      description: "A workshop-owner focused event around hiring, workshop branding, recurring service revenue, and digital lead generation.",
+      city: "Ahmedabad",
+      state: "Gujarat",
+      startDate: "2026-06-03",
+      endDate: "2026-06-03",
+      image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+      website: "https://gomico.in/events/owner-growth-summit"
+    },
+    {
+      id: "EV-2026-03",
+      name: "Student EV Foundation Day",
+      description: "An entry-level learning event for students exploring EV systems, automotive electrical basics, and career routes in modern workshops.",
+      city: "Delhi",
+      state: "Delhi",
+      startDate: "2026-07-18",
+      endDate: "2026-07-19",
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+      website: "https://gomico.in/events/student-foundation-day"
+    }
+  ];
+
+  const eventGrid = document.getElementById("eventGrid");
+  const eventStats = document.getElementById("eventStats");
+  const eventForm = document.getElementById("eventForm");
+  const imageInput = document.getElementById("eventImage");
+  const imagePreview = document.getElementById("imagePreview");
+  const previewText = document.getElementById("previewText");
+
+  const dateFormat = new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+
+  function formatDate(value){
+    return dateFormat.format(new Date(value));
+  }
+
+  function getStatus(event){
+    const today = new Date("2026-04-21");
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+    if (today < start) return { label: "Upcoming", color: "var(--lime)" };
+    if (today > end) return { label: "Completed", color: "var(--blue)" };
+    return { label: "Live", color: "var(--gold)" };
+  }
+
+  function renderStats(){
+    const upcoming = events.filter((event) => getStatus(event).label === "Upcoming").length;
+    const live = events.filter((event) => getStatus(event).label === "Live").length;
+    const cities = new Set(events.map((event) => event.city)).size;
+
+    eventStats.innerHTML = `
+      <article class="stat-card"><span>Total Events</span><strong>${events.length}</strong></article>
+      <article class="stat-card"><span>Upcoming</span><strong style="color:var(--lime)">${upcoming}</strong></article>
+      <article class="stat-card"><span>Active Cities</span><strong style="color:var(--blue)">${cities}</strong></article>
+    `;
+  }
+
+  function renderEvents(){
+    if (!events.length){
+      eventGrid.innerHTML = `<div class="empty-state">No admin events created yet. Use the form to publish your first event.</div>`;
+      return;
+    }
+
+    eventGrid.innerHTML = events
+      .slice()
+      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+      .map((event) => {
+        const status = getStatus(event);
+        return `
+          <article class="event-card">
+            <div class="event-image">
+              <img src="${event.image || fallbackImage}" alt="${event.name}">
+            </div>
+            <div class="event-body">
+              <div class="event-top">
+                <div>
+                  <h3 class="event-title">${event.name}</h3>
+                  <p class="event-desc">${event.description}</p>
+                </div>
+                <span class="event-tag" style="color:${status.color};border-color:${status.color};background:color-mix(in srgb, ${status.color} 10%, transparent)">${status.label}</span>
+              </div>
+
+              <div class="event-meta">
+                <div class="meta-box">
+                  <strong>Location</strong>
+                  ${event.city}, ${event.state}
+                </div>
+                <div class="meta-box">
+                  <strong>Dates</strong>
+                  ${formatDate(event.startDate)} to ${formatDate(event.endDate)}
+                </div>
+              </div>
+
+              <div class="event-actions">
+                <a class="btn dark" href="${event.website}" target="_blank" rel="noreferrer">Open Website</a>
+                <button class="btn ghost" type="button" data-copy="${event.website}">Copy Link</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+  }
+
+  function renderAll(){
+    renderStats();
+    renderEvents();
+  }
+
+  function updatePreview(){
+    const value = imageInput.value.trim();
+    imagePreview.src = value || fallbackImage;
+    previewText.textContent = value ? "Custom event image loaded from the URL above." : "Using the Gomico fallback event image until you provide a custom URL.";
+  }
+
+  imageInput.addEventListener("input", updatePreview);
+  imagePreview.addEventListener("error", () => {
+    imagePreview.src = fallbackImage;
+    previewText.textContent = "The image URL could not be loaded, so the fallback visual is being used.";
+  });
+
+  eventForm.addEventListener("reset", () => {
+    requestAnimationFrame(updatePreview);
+  });
+
+  eventForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formData = new FormData(eventForm);
+    const payload = {
+      id: `EV-2026-${String(events.length + 1).padStart(2, "0")}`,
+      name: String(formData.get("eventName")).trim(),
+      description: String(formData.get("eventDescription")).trim(),
+      city: String(formData.get("eventCity")).trim(),
+      state: String(formData.get("eventState")).trim(),
+      startDate: String(formData.get("eventStart")),
+      endDate: String(formData.get("eventEnd")),
+      image: String(formData.get("eventImage")).trim() || fallbackImage,
+      website: String(formData.get("eventWebsite")).trim()
+    };
+
+    if (new Date(payload.endDate) < new Date(payload.startDate)){
+      window.alert("End date must be on or after the start date.");
+      return;
+    }
+
+    events.unshift(payload);
+    eventForm.reset();
+    updatePreview();
+    renderAll();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.alert(`${payload.name} has been added to the admin events list.`);
+  });
+
+  document.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-copy]");
+    if (!button) return;
+    const url = button.dataset.copy;
+    try {
+      await navigator.clipboard.writeText(url);
+      button.textContent = "Copied";
+      setTimeout(() => {
+        button.textContent = "Copy Link";
+      }, 1200);
+    } catch {
+      window.prompt("Copy this event URL:", url);
+    }
+  });
+
+  updatePreview();
+  renderAll();
+</script>
+</body>
+</html>
+

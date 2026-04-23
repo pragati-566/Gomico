@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>GoMico · Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:#071712;
+    --bg-2:#0a2019;
+    --bg-3:#111f00;
+    --lime:#92fc05;
+    --lime-alt:#5ba000;
+    --text:#ffffff;
+    --muted:#b6cac4;
+    --line:rgba(255,255,255,.16);
+    --shadow:15px 15px 80px 10px rgba(0,0,0,.6);
+    --phone-bg:url("https://www.figma.com/api/mcp/asset/4dfb2b05-4c5b-4b1a-a7a0-76f4d532b199");
+    --mech-1-bg:url("https://www.figma.com/api/mcp/asset/3ff205ca-2f01-4b99-b4e3-990fed91ff48");
+    --mech-2-bg:url("https://www.figma.com/api/mcp/asset/783c4249-a79b-42f5-b921-7e480db924d4");
+    --mech-3-bg:url("https://www.figma.com/api/mcp/asset/8677575b-c21a-4bfa-8367-6d776f222a16");
+    --owner-1-bg:url("https://www.figma.com/api/mcp/asset/7c902d60-35ca-4c01-8690-4dadf99ba060");
+    --owner-2-bg:url("https://www.figma.com/api/mcp/asset/38d04fcb-2d09-4464-a91a-36a7f9c7a5b3");
+    --student-1-bg:url("https://www.figma.com/api/mcp/asset/fb36c1a2-b0d1-400c-91b1-34fadd2e0c62");
+    --student-2-bg:url("https://www.figma.com/api/mcp/asset/dcd08554-537b-4dfe-a3f2-d3e108b488f1");
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    min-height:100vh;
+    overflow:hidden;
+    font-family:"DM Sans","Noto Sans Devanagari",system-ui,sans-serif;
+    color:var(--text);
+    background:var(--bg-1);
+  }
+
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+
+  .stage{
+    position:relative;
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:20px;
+    isolation:isolate;
+  }
+
+  .backdrop{
+    position:absolute;
+    inset:0;
+    background:center/cover no-repeat var(--phone-bg);
+    transform:scale(1.02);
+  }
+
+  .backdrop::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(10,32,25,.9);
+    backdrop-filter:blur(13px);
+    -webkit-backdrop-filter:blur(13px);
+  }
+
+  .ambient{position:absolute;inset:0;pointer-events:none}
+  .ambient::before,.ambient::after{
+    content:"";
+    position:absolute;
+    border-radius:50%;
+    filter:blur(96px);
+    opacity:.18;
+  }
+  .ambient::before{
+    width:32vw;height:32vw;min-width:220px;min-height:220px;
+    left:-6vw;top:18vh;background:rgba(146,252,5,.25);
+  }
+  .ambient::after{
+    width:28vw;height:28vw;min-width:200px;min-height:200px;
+    right:-6vw;bottom:10vh;background:rgba(91,160,0,.22);
+  }
+
+  .stack{
+    position:relative;
+    z-index:2;
+    width:100%;
+    min-height:560px;
+    display:grid;
+    place-items:center;
+  }
+
+  .card{
+    position:absolute;
+    width:min(100%, 477px);
+    background:var(--bg-2);
+    border:.5px solid var(--lime-alt);
+    border-radius:32px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(14px) scale(.985);
+    transition:opacity .22s ease, transform .22s ease;
+  }
+
+  .card.active{
+    opacity:1;
+    pointer-events:auto;
+    transform:none;
+  }
+
+  .card.phone{min-height:420px;padding:60px 40px 40px}
+  .card.panel{min-height:537px;padding:28px 40px 40px}
+  .card.welcome{min-height:371px;padding:60px 40px}
+  .card.owner{min-height:481px}
+
+  .logo{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .logo img{display:block;width:160px;max-width:100%;height:auto}
+
+  h1,h2,p{margin:0}
+  .title,.panel-title,.welcome-title{
+    font-size:32px;line-height:1;font-weight:500;letter-spacing:-.02em;
+  }
+  .title{margin-top:57px;text-align:center}
+  .panel-title{margin-top:43px}
+  .sub,.welcome-sub{
+    margin-top:12px;color:var(--muted);font-size:20px;line-height:1.42;letter-spacing:-.02em;
+  }
+  .sub{text-align:center}
+  .welcome-sub{text-align:center}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .back{
+    display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:0;
+    color:var(--muted);font-size:16px;line-height:1.3;font-weight:500;
+  }
+  .close{
+    width:24px;height:24px;background:none;border:0;padding:0;color:#fff;display:grid;place-items:center;
+  }
+
+  .field,.group{margin-top:24px}
+  .label{
+    display:block;margin-bottom:6px;color:var(--muted);font-size:14px;line-height:1.3;
+    font-weight:600;text-transform:uppercase;letter-spacing:-.02em;
+  }
+  .label.normal{font-size:14px;text-transform:none}
+
+  .phone-input,.input,.select{
+    width:100%;height:48px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg-1);color:#fff;outline:none;transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .phone-input:focus-within,.input:focus,.select:focus,.otp-cell:focus{
+    border-color:var(--lime);
+    box-shadow:0 0 0 3px rgba(146,252,5,.12);
+  }
+
+  .phone-input{
+    margin-top:31px;
+    display:grid;grid-template-columns:auto auto 1px 1fr;align-items:center;gap:14px;
+    padding:0 12px;border-color:var(--lime);
+  }
+  .flag{
+    width:36px;height:24px;border-radius:6px;
+    background:url("https://www.figma.com/api/mcp/asset/a029756d-83bf-4fb1-8d16-8a2170b928b6") center/cover no-repeat;
+  }
+  .phone-code{font-size:16px;line-height:1.3;font-weight:700}
+  .divider{width:1px;height:20px;background:rgba(255,255,255,.18)}
+  .phone-input input{
+    border:0;background:transparent;outline:none;color:var(--muted);min-width:0;
+    font-size:16px;line-height:1.3;font-weight:500;letter-spacing:-.02em;
+  }
+  .phone-input input::placeholder,.input::placeholder{color:var(--muted)}
+
+  .input,.select{
+    padding:0 12px;font-size:16px;line-height:1.3;font-weight:500;
+  }
+  .select{
+    appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:42px;
+  }
+
+  .otp-row{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;
+  }
+  .otp-cell{
+    width:100%;height:64px;border-radius:12px;border:1px solid var(--line);
+    background:var(--bg-1);color:#fff;outline:none;text-align:center;font-size:28px;font-weight:700;
+  }
+  .helper{
+    margin-top:14px;color:var(--muted);font-size:14px;line-height:1.4;text-align:center;
+  }
+  .helper a{color:var(--lime);font-weight:600}
+
+  .role-list{display:grid;gap:10px;margin-top:22px}
+  .role-btn{
+    width:100%;min-height:48px;padding:0 16px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg-1);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    font-size:16px;line-height:1.3;font-weight:600;transition:border-color .18s ease,background .18s ease,color .18s ease;
+  }
+  .role-btn.active{background:rgba(146,252,5,.1);border-color:var(--lime);color:var(--lime)}
+  .role-check{
+    width:22px;height:22px;border-radius:50%;border:1px solid currentColor;display:grid;place-items:center;font-size:12px;opacity:.72;
+  }
+
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .chip{
+    min-height:29px;padding:6px 12px;border-radius:5px;border:1px solid var(--line);background:var(--bg-1);
+    color:var(--muted);font-size:14px;line-height:1.3;font-weight:500;transition:border-color .18s ease,background .18s ease,color .18s ease;
+  }
+  .chip.active{border-color:var(--lime);background:rgba(146,252,5,.1);color:#fff}
+  .works-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .work-chip{
+    height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg-1);color:var(--muted);
+    font-size:16px;line-height:1.3;font-weight:400;
+  }
+  .work-chip.active{
+    background:var(--bg-3);border:2px solid var(--lime-alt);color:#fff;font-weight:700;
+  }
+
+  .btn{
+    width:100%;height:51px;margin-top:24px;border-radius:8px;border:1px solid transparent;
+    background:var(--lime);color:#0b1f19;font-size:18px;line-height:1.32;font-weight:700;letter-spacing:-.02em;
+    transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(146,252,5,.12)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+  .welcome-wrap{display:flex;flex-direction:column;gap:40px;align-items:center}
+  .welcome-head{display:flex;flex-direction:column;gap:24px;align-items:center;width:100%}
+  .welcome-icon{width:64px;height:64px;display:grid;place-items:center}
+  .welcome-title{text-align:center}
+  .welcome-title .accent{color:var(--lime)}
+
+  .note{
+    position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+    width:min(100% - 32px, 520px);text-align:center;color:rgba(255,255,255,.54);font-size:12px;z-index:2;
+  }
+  .hidden{display:none !important}
+
+  @media (max-width:720px){
+    .stage{padding:14px}
+    .card{width:100%;max-width:420px;border-radius:24px}
+    .card.phone{padding:34px 20px 24px;min-height:390px}
+    .card.panel{padding:22px 20px 24px;min-height:520px}
+    .card.welcome{padding:40px 20px;min-height:320px}
+    .card.owner{min-height:470px}
+    .title,.panel-title,.welcome-title{font-size:28px}
+    .sub,.welcome-sub{font-size:17px}
+    .otp-row{gap:10px}
+    .otp-cell{height:58px;font-size:24px}
+    .note{font-size:11px}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{transition:none !important;animation:none !important}
+  }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <div class="backdrop" id="flow-bg"></div>
+    <div class="ambient"></div>
+
+    <div class="stack">
+      <section class="card phone active" id="step-phone">
+        <div class="logo">
+          <img src="../assets/images/logo-gomico.svg" alt="GOMICO">
+        </div>
+
+        <h1 class="title">Login / Register</h1>
+        <p class="sub">Enter your mobile number to start</p>
+
+        <label class="phone-input" for="phone-number">
+          <span class="flag" aria-hidden="true"></span>
+          <span class="phone-code">+91</span>
+          <span class="divider" aria-hidden="true"></span>
+          <input id="phone-number" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="12" placeholder="000 000 0000" />
+        </label>
+
+        <button class="btn" id="send-otp" disabled>OTP प्राप्त करें</button>
+      </section>
+
+      <section class="card panel" id="step-otp">
+        <div class="topbar">
+          <button class="back" data-back="phone">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 11H7.83L12.42 6.41L11 5L4 12L11 19L12.41 17.59L7.83 13H20V11Z" fill="#B6CAC4"/></svg>
+            Back
+          </button>
+          <button class="close" data-reset aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <h2 class="panel-title">Verify OTP</h2>
+        <p class="sub" style="margin-top:12px;text-align:left;font-size:18px">Sent to <span id="otp-target" style="color:#fff">+91 000 000 0000</span></p>
+
+        <div class="otp-row">
+          <input class="otp-cell" inputmode="numeric" maxlength="1" placeholder="0" />
+          <input class="otp-cell" inputmode="numeric" maxlength="1" placeholder="0" />
+          <input class="otp-cell" inputmode="numeric" maxlength="1" placeholder="0" />
+          <input class="otp-cell" inputmode="numeric" maxlength="1" placeholder="0" />
+        </div>
+
+        <button class="btn" id="verify-otp" disabled>Verify करें</button>
+
+        <div class="helper">
+          <span id="resend-timer">Resend in 00:30</span>
+          <a href="#" id="resend-link" class="hidden">OTP वापस भेजें</a>
+        </div>
+      </section>
+
+      <section class="card panel" id="step-role">
+        <div class="topbar">
+          <button class="back" data-back="otp">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 11H7.83L12.42 6.41L11 5L4 12L11 19L12.41 17.59L7.83 13H20V11Z" fill="#B6CAC4"/></svg>
+            Back
+          </button>
+          <button class="close" data-reset aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <h2 class="panel-title">Select User Type</h2>
+        <p class="sub" style="margin-top:12px;text-align:left;font-size:18px">Choose your role to continue</p>
+
+        <div class="role-list">
+          <button class="role-btn" data-role="mechanic"><span>मैकेनिक (Mechanic)</span><span class="role-check">✓</span></button>
+          <button class="role-btn" data-role="owner"><span>मालिक (Owner)</span><span class="role-check">✓</span></button>
+          <button class="role-btn" data-role="student"><span>छात्र (Student)</span><span class="role-check">✓</span></button>
+        </div>
+
+        <button class="btn" id="continue-role" disabled>Continue</button>
+      </section>
+
+      <section class="card panel" id="step-mechanic-1">
+        <div class="topbar">
+          <button class="back" data-back="role">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 11H7.83L12.42 6.41L11 5L4 12L11 19L12.41 17.59L7.83 13H20V11Z" fill="#B6CAC4"/></svg>
+            Back
+          </button>
+          <button class="close" data-reset aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <h2 class="panel-title">Complete Profile</h2>
+
+        <div class="group"><input class="input" id="mechanic-name" type="text" placeholder="Full Name" /></div>
+        <div class="group"><input class="input" id="mechanic-city" type="text" placeholder="City" /></div>
+        <div class="group">
+          <div class="label">Works On:</div>
+          <div class="works-grid">
+            <button type="button" class="work-chip active" data-work="4 Wheeler">4 Wheeler</button>
+            <button type="button" class="work-chip" data-work="2 Wheeler">2 Wheeler</button>
+          </div>
+        </div>
+
+        <button class="btn" id="continue-mechanic-1">आगे बढ़ें</button>
+      </section>
+
+      <section class="card panel" id="step-mechanic-2">
+        <div class="topbar">
+          <button class="back" data-back="mechanic-1">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 11H7.83L12.42 6.41L11 5L4 12L11 19L12.41 17.59L7.83 13H20V11Z" fill="#B6CAC4"/></svg>
+            Back
+          </button>
+          <button class="close" data-reset aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <h2 class="panel-title">Complete Profile</h2>
+
+        <div class="group">
+          <label class="label" for="experience">Experience</label>
+          <select class="select" id="experience">
+            <option>0-1 Years</option>
+            <option>1-3 Years</option>
+            <option>3-5 Years</option>
+            <option>5-10 Years</option>
+            <option>10+ Years</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <div class="label">Expertise</div>
+          <div class="chips" id="expertise-set">
+            <button type="button" class="chip" data-chip="Electrical &amp; Wiring">Electrical &amp; Wiring</button>
+            <button type="button" class="chip" data-chip="Engine &amp; Repair">Engine &amp; Repair</button>
+            <button type="button" class="chip" data-chip="AC Repair">AC Repair</button>
+            <button type="button" class="chip" data-chip="Denting &amp; Painting">Denting &amp; Painting</button>
+            <button type="button" class="chip" data-chip="Windshield">Windshield</button>
+            <button type="button" class="chip" data-chip="Other">Other</button>
+          </div>
+        </div>
+
+        <div class="group"><input class="input" id="referral-code" type="text" placeholder="Referral Code (Optional)" /></div>
+
+        <button class="btn" id="complete-mechanic">Complete</button>
+      </section>
+
+      <section class="card panel owner" id="step-owner-1">
+        <div class="topbar">
+          <button class="back" data-back="role">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 11H7.83L12.42 6.41L11 5L4 12L11 19L12.41 17.59L7.83 13H20V11Z" fill="#B6CAC4"/></svg>
+            Back
+          </button>
+          <button class="close" data-reset aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <h2 class="panel-title">Complete Profile</h2>
+
+        <div class="group"><input class="input" id="owner-name" type="text" placeholder="Full Name" /></div>
+        <div class="group"><input class="input" id="owner-city" type="text" placeholder="City" /></div>
+        <div class="group">
+          <div class="label normal">आपकी वर्कशॉप या दुकान का नाम क्या है?</div>
+          <input class="input" id="owner-shop" type="text" placeholder="जैसे: भारत मोटर्स" />
+        </div>
+
+        <button class="btn" id="complete-owner">Complete</button>
+      </section>
+
+      <section class="card panel" id="step-student-1">
+        <div class="topbar">
+          <button class="back" data-back="role">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 11H7.83L12.42 6.41L11 5L4 12L11 19L12.41 17.59L7.83 13H20V11Z" fill="#B6CAC4"/></svg>
+            Back
+          </button>
+          <button class="close" data-reset aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <h2 class="panel-title">Complete Profile</h2>
+
+        <div class="group"><input class="input" id="student-name" type="text" placeholder="Full Name" /></div>
+        <div class="group"><input class="input" id="student-city" type="text" placeholder="City" /></div>
+        <div class="group"><input class="input" id="student-age" type="text" placeholder="अपनी उम्र डालें" /></div>
+
+        <button class="btn" id="complete-student">Complete</button>
+      </section>
+
+      <section class="card welcome" id="step-mechanic-welcome">
+        <div class="welcome-wrap">
+          <div class="welcome-head">
+            <div class="welcome-icon" aria-hidden="true">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="20" stroke="#92FC05" stroke-width="4"/>
+                <path d="M24.5 32L29.6 37.1L39.5 27.2" stroke="#92FC05" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="welcome-title">Welcome to <span class="accent">GOMICO!</span></h2>
+              <p class="welcome-sub">Enter your mobile number to start</p>
+            </div>
+          </div>
+          <button class="btn" id="start-mechanic" style="width:auto;min-width:173px;margin-top:0;padding:0 32px">सीखना शुरू करे</button>
+        </div>
+      </section>
+
+      <section class="card welcome" id="step-owner-welcome">
+        <div class="welcome-wrap">
+          <div class="welcome-head">
+            <div class="welcome-icon" aria-hidden="true">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="20" stroke="#92FC05" stroke-width="4"/>
+                <path d="M24.5 32L29.6 37.1L39.5 27.2" stroke="#92FC05" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="welcome-title">Welcome to <span class="accent">GOMICO!</span></h2>
+              <p class="welcome-sub">Enter your mobile number to start</p>
+            </div>
+          </div>
+          <button class="btn" id="start-owner" style="width:auto;min-width:173px;margin-top:0;padding:0 32px">सीखना शुरू करे</button>
+        </div>
+      </section>
+
+      <section class="card welcome" id="step-student-welcome">
+        <div class="welcome-wrap">
+          <div class="welcome-head">
+            <div class="welcome-icon" aria-hidden="true">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="20" stroke="#92FC05" stroke-width="4"/>
+                <path d="M24.5 32L29.6 37.1L39.5 27.2" stroke="#92FC05" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="welcome-title">Welcome to <span class="accent">GOMICO!</span></h2>
+              <p class="welcome-sub">Enter your mobile number to start</p>
+            </div>
+          </div>
+          <button class="btn" id="start-student" style="width:auto;min-width:173px;margin-top:0;padding:0 32px">सीखना शुरू करे</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="note">Mechanic, owner, and student now follow separate Figma-based branches after role selection.</div>
+  </main>
+
+<script>
+  const flowBg = document.getElementById("flow-bg");
+  const steps = ["phone","otp","role","mechanic-1","mechanic-2","mechanic-welcome","owner-1","owner-welcome","student-1","student-welcome"];
+  const stepEls = Object.fromEntries(steps.map((name) => [name, document.getElementById(`step-${name}`)]));
+  let current = "phone";
+  let resendTimer = null;
+  let selectedRole = "mechanic";
+  let selectedWorkType = "4 Wheeler";
+  const expertise = new Set(["Electrical & Wiring"]);
+
+  const BACKGROUNDS = {
+    phone: getComputedStyle(document.documentElement).getPropertyValue("--phone-bg"),
+    otp: getComputedStyle(document.documentElement).getPropertyValue("--phone-bg"),
+    role: getComputedStyle(document.documentElement).getPropertyValue("--phone-bg"),
+    "mechanic-1": getComputedStyle(document.documentElement).getPropertyValue("--mech-1-bg"),
+    "mechanic-2": getComputedStyle(document.documentElement).getPropertyValue("--mech-2-bg"),
+    "mechanic-welcome": getComputedStyle(document.documentElement).getPropertyValue("--mech-3-bg"),
+    "owner-1": getComputedStyle(document.documentElement).getPropertyValue("--owner-1-bg"),
+    "owner-welcome": getComputedStyle(document.documentElement).getPropertyValue("--owner-2-bg"),
+    "student-1": getComputedStyle(document.documentElement).getPropertyValue("--student-1-bg"),
+    "student-welcome": getComputedStyle(document.documentElement).getPropertyValue("--student-2-bg")
+  };
+
+  const phoneInput = document.getElementById("phone-number");
+  const sendOtpBtn = document.getElementById("send-otp");
+  const verifyOtpBtn = document.getElementById("verify-otp");
+  const otpTarget = document.getElementById("otp-target");
+  const roleContinueBtn = document.getElementById("continue-role");
+  const resendTimerEl = document.getElementById("resend-timer");
+  const resendLink = document.getElementById("resend-link");
+  const mechanicNameEl = document.getElementById("mechanic-name");
+  const mechanicCityEl = document.getElementById("mechanic-city");
+  const mechanicStep1Btn = document.getElementById("continue-mechanic-1");
+  const experienceEl = document.getElementById("experience");
+  const referralEl = document.getElementById("referral-code");
+  const ownerNameEl = document.getElementById("owner-name");
+  const ownerCityEl = document.getElementById("owner-city");
+  const ownerShopEl = document.getElementById("owner-shop");
+  const studentNameEl = document.getElementById("student-name");
+  const studentCityEl = document.getElementById("student-city");
+  const studentAgeEl = document.getElementById("student-age");
+
+  function setBackground(stepName){
+    flowBg.style.backgroundImage = BACKGROUNDS[stepName] || BACKGROUNDS.phone;
+  }
+
+  function showStep(name){
+    if (name === current) return;
+    stepEls[current].classList.remove("active");
+    stepEls[name].classList.add("active");
+    current = name;
+    setBackground(name);
+    const target = stepEls[name].querySelector("input,button,select");
+    if (target) setTimeout(() => target.focus({ preventScroll: true }), 120);
+  }
+
+  function formatPhone(value){
+    let digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length > 6) digits = `${digits.slice(0,3)} ${digits.slice(3,6)} ${digits.slice(6)}`;
+    else if (digits.length > 3) digits = `${digits.slice(0,3)} ${digits.slice(3)}`;
+    return digits;
+  }
+
+  function updatePhone(){
+    phoneInput.value = formatPhone(phoneInput.value);
+    sendOtpBtn.disabled = phoneInput.value.replace(/\D/g, "").length !== 10;
+  }
+
+  function updateOtp(){
+    const cells = [...document.querySelectorAll(".otp-cell")];
+    verifyOtpBtn.disabled = cells.some((cell) => !cell.value.trim());
+  }
+
+  function syncRoleSelection(){
+    document.querySelectorAll(".role-btn").forEach((button) => {
+      button.classList.toggle("active", button.dataset.role === selectedRole);
+    });
+    roleContinueBtn.disabled = !selectedRole;
+  }
+
+  function syncChips(){
+    document.querySelectorAll("[data-chip]").forEach((chip) => {
+      chip.classList.toggle("active", expertise.has(chip.dataset.chip));
+    });
+  }
+
+  function syncWorkType(){
+    document.querySelectorAll(".work-chip").forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.work === selectedWorkType);
+    });
+  }
+
+  function startResend(){
+    let seconds = 30;
+    clearInterval(resendTimer);
+    resendTimerEl.classList.remove("hidden");
+    resendLink.classList.add("hidden");
+    resendTimerEl.textContent = "Resend in 00:30";
+    resendTimer = setInterval(() => {
+      seconds -= 1;
+      resendTimerEl.textContent = `Resend in 00:${String(seconds).padStart(2, "0")}`;
+      if (seconds <= 0) {
+        clearInterval(resendTimer);
+        resendTimerEl.classList.add("hidden");
+        resendLink.classList.remove("hidden");
+      }
+    }, 1000);
+  }
+
+  function saveProfile(){
+    const payload = {
+      role: selectedRole,
+      phone: phoneInput.value.replace(/\D/g, ""),
+      name: selectedRole === "mechanic" ? (mechanicNameEl.value.trim() || "Aman Singh") : selectedRole === "owner" ? (ownerNameEl.value.trim() || "Owner User") : (studentNameEl.value.trim() || "Student User"),
+      city: selectedRole === "mechanic" ? (mechanicCityEl.value.trim() || "Bhopal") : selectedRole === "owner" ? (ownerCityEl.value.trim() || "Bhopal") : (studentCityEl.value.trim() || "Bhopal"),
+      worksOn: selectedRole === "mechanic" ? selectedWorkType : "",
+      experience: selectedRole === "mechanic" ? experienceEl.value : "",
+      expertise: selectedRole === "mechanic" ? [...expertise] : [],
+      referral: selectedRole === "mechanic" ? referralEl.value.trim() : "",
+      shopName: selectedRole === "owner" ? ownerShopEl.value.trim() : "",
+      age: selectedRole === "student" ? studentAgeEl.value.trim() : ""
+    };
+    localStorage.setItem("gomicoProfile", JSON.stringify(payload));
+  }
+
+  function resetFlow(){
+    clearInterval(resendTimer);
+    current = "phone";
+    selectedRole = "mechanic";
+    selectedWorkType = "4 Wheeler";
+    expertise.clear();
+    expertise.add("Electrical & Wiring");
+    phoneInput.value = "";
+    otpTarget.textContent = "+91 000 000 0000";
+    document.querySelectorAll(".otp-cell").forEach((cell) => { cell.value = ""; });
+    mechanicNameEl.value = "";
+    mechanicCityEl.value = "";
+    experienceEl.value = "0-1 Years";
+    referralEl.value = "";
+    ownerNameEl.value = "";
+    ownerCityEl.value = "";
+    ownerShopEl.value = "";
+    studentNameEl.value = "";
+    studentCityEl.value = "";
+    studentAgeEl.value = "";
+    resendTimerEl.classList.remove("hidden");
+    resendTimerEl.textContent = "Resend in 00:30";
+    resendLink.classList.add("hidden");
+    Object.values(stepEls).forEach((step) => step.classList.remove("active"));
+    stepEls.phone.classList.add("active");
+    syncRoleSelection();
+    syncChips();
+    syncWorkType();
+    updatePhone();
+    updateOtp();
+    setBackground("phone");
+  }
+
+  phoneInput.addEventListener("input", updatePhone);
+  phoneInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !sendOtpBtn.disabled) sendOtpBtn.click();
+  });
+
+  sendOtpBtn.addEventListener("click", () => {
+    otpTarget.textContent = `+91 ${phoneInput.value}`;
+    showStep("otp");
+    startResend();
+  });
+
+  [...document.querySelectorAll(".otp-cell")].forEach((cell, index, cells) => {
+    cell.addEventListener("input", () => {
+      cell.value = cell.value.replace(/\D/g, "").slice(0, 1);
+      if (cell.value && cells[index + 1]) cells[index + 1].focus();
+      updateOtp();
+    });
+    cell.addEventListener("keydown", (event) => {
+      if (event.key === "Backspace" && !cell.value && cells[index - 1]) cells[index - 1].focus();
+      if (event.key === "Enter" && !verifyOtpBtn.disabled) verifyOtpBtn.click();
+    });
+    cell.addEventListener("paste", (event) => {
+      const paste = (event.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 4);
+      if (!paste) return;
+      event.preventDefault();
+      paste.split("").forEach((digit, digitIndex) => {
+        if (cells[digitIndex]) cells[digitIndex].value = digit;
+      });
+      updateOtp();
+    });
+  });
+
+  verifyOtpBtn.addEventListener("click", () => {
+    showStep("role");
+  });
+
+  resendLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    startResend();
+  });
+
+  document.querySelectorAll(".role-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedRole = button.dataset.role;
+      syncRoleSelection();
+    });
+  });
+
+  document.querySelectorAll(".work-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      selectedWorkType = chip.dataset.work;
+      syncWorkType();
+    });
+  });
+
+  document.querySelectorAll("[data-chip]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const value = chip.dataset.chip;
+      if (expertise.has(value)) expertise.delete(value);
+      else expertise.add(value);
+      syncChips();
+    });
+  });
+
+  roleContinueBtn.addEventListener("click", () => {
+    if (selectedRole === "mechanic") showStep("mechanic-1");
+    else if (selectedRole === "owner") showStep("owner-1");
+    else showStep("student-1");
+  });
+
+  mechanicStep1Btn.addEventListener("click", () => {
+    showStep("mechanic-2");
+  });
+
+  document.getElementById("complete-mechanic").addEventListener("click", () => {
+    saveProfile();
+    showStep("mechanic-welcome");
+  });
+
+  document.getElementById("complete-owner").addEventListener("click", () => {
+    saveProfile();
+    showStep("owner-welcome");
+  });
+
+  document.getElementById("complete-student").addEventListener("click", () => {
+    saveProfile();
+    showStep("student-welcome");
+  });
+
+  document.getElementById("start-mechanic").addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+  });
+
+  document.getElementById("start-owner").addEventListener("click", () => {
+    window.location.href = "index.html";
+  });
+
+  document.getElementById("start-student").addEventListener("click", () => {
+    window.location.href = "index.html";
+  });
+
+  document.querySelectorAll("[data-back]").forEach((button) => {
+    button.addEventListener("click", () => showStep(button.dataset.back));
+  });
+
+  document.querySelectorAll("[data-reset]").forEach((button) => {
+    button.addEventListener("click", resetFlow);
+  });
+
+  syncRoleSelection();
+  syncChips();
+  syncWorkType();
+  updatePhone();
+  updateOtp();
+  setBackground("phone");
+  setTimeout(() => phoneInput.focus(), 180);
+</script>
+</body>
+</html>
+

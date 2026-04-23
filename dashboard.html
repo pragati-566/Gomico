@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>GoMico · Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-0:#04110d;
+    --ink-1:#071712;
+    --ink-2:#0a2019;
+    --ink-3:#123228;
+    --ink-4:#203a32;
+    --lime:#92fc05;
+    --lime-deep:#5ba000;
+    --red:#ee4347;
+    --white:#ffffff;
+    --muted:#b6cac4;
+    --muted-2:rgba(255,255,255,.64);
+    --border:rgba(255,255,255,.12);
+    --shadow:0 28px 80px rgba(0,0,0,.34);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    font-family:"DM Sans","Noto Sans Devanagari",system-ui,sans-serif;
+    color:var(--white);
+    background:
+      radial-gradient(circle at 22% 18%, rgba(146,252,5,.16), transparent 26%),
+      radial-gradient(circle at 82% 70%, rgba(91,160,0,.12), transparent 24%),
+      linear-gradient(180deg, #05140f 0%, #04110d 100%);
+    overflow-x:hidden;
+  }
+
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;cursor:pointer}
+
+  .page{
+    position:relative;
+    min-height:100vh;
+  }
+
+  .page::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(rgba(146,252,5,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(146,252,5,.055) 1px, transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(circle at 50% 0%, #000 10%, transparent 82%);
+    opacity:.38;
+    pointer-events:none;
+  }
+
+  .container{
+    position:relative;
+    width:min(1120px, calc(100% - 32px));
+    margin:0 auto;
+  }
+
+  header.topbar{
+    position:sticky;
+    top:0;
+    z-index:10;
+    backdrop-filter:blur(16px);
+    background:rgba(5,23,17,.74);
+    border-bottom:1px solid rgba(52,77,70,.8);
+  }
+
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:18px 0;
+  }
+
+  .topbar-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .brand-mark{
+    width:52px;
+    height:44px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg, var(--lime), var(--lime-deep));
+    box-shadow:0 0 36px rgba(146,252,5,.18);
+  }
+
+  .brand-name{
+    font-size:32px;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    height:42px;
+    padding:0 20px;
+    border-radius:10px;
+    border:1px solid transparent;
+    background:transparent;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+
+  .btn:hover{transform:translateY(-1px)}
+
+  .btn.edit{
+    border-color:rgba(146,252,5,.4);
+    color:var(--lime);
+  }
+
+  .btn.edit:hover{
+    background:rgba(146,252,5,.08);
+    box-shadow:0 18px 32px rgba(146,252,5,.08);
+  }
+
+  .btn.logout{
+    border-color:rgba(238,67,71,.65);
+    color:var(--red);
+    background:rgba(238,67,71,.08);
+  }
+
+  .btn.logout:hover{
+    background:rgba(238,67,71,.14);
+    box-shadow:0 18px 32px rgba(238,67,71,.08);
+  }
+
+  .hero{
+    padding:30px 0 22px;
+  }
+
+  .profile-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:22px;
+    padding:26px 28px;
+    border-radius:32px;
+    background:rgba(5,23,17,.72);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 0 40px rgba(146,252,5,.08);
+    backdrop-filter:blur(16px);
+  }
+
+  .profile-main{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    min-width:0;
+  }
+
+  .avatar{
+    width:76px;
+    height:76px;
+    flex:0 0 auto;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    font-size:28px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    color:#fff;
+  }
+
+  .profile-copy h1{
+    margin:0;
+    font-size:34px;
+    line-height:1.08;
+    letter-spacing:-.04em;
+    font-weight:800;
+  }
+
+  .profile-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(146,252,5,.1);
+    border:1px solid rgba(146,252,5,.18);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .heading-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:28px;
+  }
+
+  .heading-row h2{
+    margin:0;
+    font-size:36px;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+
+  .mini-tag{
+    padding:7px 10px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.08);
+    font-size:12px;
+    font-weight:700;
+    color:#fff;
+  }
+
+  .content-grid{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) 320px;
+    gap:36px;
+    align-items:start;
+    padding-bottom:54px;
+  }
+
+  .course-stack{
+    display:grid;
+    gap:22px;
+  }
+
+  .course-card{
+    padding:18px 16px;
+    border-radius:28px;
+    background:rgba(10,32,25,.88);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:var(--shadow);
+    transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .course-card.highlight{
+    border-color:rgba(146,252,5,.46);
+    box-shadow:0 24px 62px rgba(0,0,0,.28), 0 0 48px rgba(146,252,5,.08);
+  }
+
+  .course-card:hover{
+    transform:translateY(-4px);
+    border-color:rgba(146,252,5,.24);
+  }
+
+  .course-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  .course-icon{
+    width:44px;
+    height:44px;
+    flex:0 0 auto;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:var(--ink-3);
+    border:1px solid rgba(255,255,255,.12);
+    color:#ffd84d;
+    font-size:20px;
+  }
+
+  .course-copy{
+    min-width:0;
+  }
+
+  .course-copy h3{
+    margin:0;
+    font-size:18px;
+    line-height:1.2;
+    font-weight:800;
+    letter-spacing:-.03em;
+  }
+
+  .course-copy p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.45;
+  }
+
+  .progress-wrap{
+    margin-top:18px;
+  }
+
+  .progress-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+  }
+
+  .progress-top span:first-child{color:var(--muted)}
+  .progress-top strong{font-size:14px}
+
+  .bar{
+    height:8px;
+    margin-top:8px;
+    border-radius:999px;
+    background:#17362d;
+    overflow:hidden;
+  }
+
+  .bar-fill{
+    height:100%;
+    border-radius:inherit;
+    background:linear-gradient(90deg, var(--lime), #7ddf00);
+  }
+
+  .course-actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-top:16px;
+  }
+
+  .link-action{
+    color:var(--lime);
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+
+  .chip-action{
+    height:36px;
+    padding:0 14px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.14);
+    background:transparent;
+    color:rgba(255,255,255,.7);
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .chip-action.success{
+    background:#0d3327;
+    color:#fff;
+    border-color:#38685a;
+  }
+
+  aside.side{
+    display:grid;
+    gap:18px;
+  }
+
+  .metric-card,
+  .support-card{
+    padding:20px;
+    border-radius:28px;
+    background:rgba(10,32,25,.88);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:var(--shadow);
+  }
+
+  .metric-card h3{
+    margin:0;
+    font-size:24px;
+    font-weight:800;
+    letter-spacing:-.03em;
+  }
+
+  .metric-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:14px;
+    margin-top:18px;
+  }
+
+  .metric-box{
+    min-height:132px;
+    border-radius:14px;
+    background:var(--ink-1);
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    text-align:center;
+  }
+
+  .metric-box strong{
+    font-size:52px;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:-.06em;
+  }
+
+  .metric-box span{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.35;
+  }
+
+  .support-band{
+    margin:16px 0 20px;
+    padding:22px 24px;
+    border-radius:28px;
+    background:rgba(255,255,255,.1);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .support-main{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  .support-icon{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:rgba(255,255,255,.12);
+    flex:0 0 auto;
+  }
+
+  .support-main strong{
+    display:block;
+    font-size:20px;
+    line-height:1.28;
+  }
+
+  .support-main span{
+    display:block;
+    margin-top:4px;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .support-mail{
+    text-align:right;
+  }
+
+  .support-mail span{
+    display:block;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .support-mail a{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:6px;
+    color:var(--lime);
+    font-weight:800;
+    font-size:15px;
+  }
+
+  footer.site-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:0 0 46px;
+    color:rgba(255,255,255,.7);
+    font-size:14px;
+  }
+
+  .footer-links{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+
+  @media (max-width: 960px){
+    .content-grid{
+      grid-template-columns:1fr;
+      gap:24px;
+    }
+
+    aside.side{
+      order:-1;
+    }
+
+    .support-band,
+    .profile-card,
+    footer.site-footer{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .support-mail{text-align:left}
+  }
+
+  @media (max-width: 680px){
+    .container{
+      width:min(100%, calc(100% - 20px));
+    }
+
+    .topbar-inner{padding:16px 0}
+    .brand-name{font-size:28px}
+    .profile-card{
+      padding:20px;
+      border-radius:24px;
+    }
+
+    .profile-main{
+      align-items:flex-start;
+      flex-direction:column;
+    }
+
+    .avatar{
+      width:64px;
+      height:64px;
+      font-size:24px;
+    }
+
+    .profile-copy h1{font-size:28px}
+    .heading-row h2{font-size:30px}
+    .metric-grid{grid-template-columns:1fr 1fr}
+    .course-actions{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+  }
+
+  @media (max-width: 480px){
+    .metric-grid{grid-template-columns:1fr}
+    .btn{
+      width:100%;
+      justify-content:center;
+    }
+
+    .topbar-inner{
+      align-items:flex-start;
+      flex-direction:column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *,
+    *::before,
+    *::after{
+      animation:none !important;
+      transition:none !important;
+      scroll-behavior:auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="index.html" aria-label="GoMico home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 28 24" fill="none">
+              <path d="M4 18L10 6L14 12L18 4L24 18Z" fill="#071D14" stroke="#071D14" stroke-width="1.5" stroke-linejoin="round"></path>
+              <circle cx="14" cy="14" r="2.5" fill="#92FC05"></circle>
+            </svg>
+          </span>
+          <span class="brand-name">GoMico</span>
+        </a>
+
+        <div class="topbar-actions">
+          <a class="btn edit" href="admin-dashboard.html">Admin Panel</a>
+          <button class="btn logout" id="logout-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <div class="profile-card">
+          <div class="profile-main">
+            <div class="avatar" id="avatar">AS</div>
+            <div class="profile-copy">
+              <h1 id="profile-name">Aman Singh</h1>
+              <div class="profile-tags">
+                <span class="tag" id="profile-role">मैकेनिक (Mechanic)</span>
+                <span class="tag" id="profile-city">शहर: Bhopal</span>
+                <span class="tag" id="profile-exp">अनुभव: 5-10 Years</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn edit" id="edit-profile">Edit Profile</button>
+        </div>
+
+        <div class="heading-row">
+          <h2>My Courses</h2>
+          <span class="mini-tag">Free</span>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="course-stack" id="course-stack"></div>
+
+        <aside class="side">
+          <section class="metric-card">
+            <h3>Your Progress</h3>
+            <div class="metric-grid">
+              <div class="metric-box">
+                <strong id="completed-count">1</strong>
+                <span>Courses Completed</span>
+              </div>
+              <div class="metric-box">
+                <strong id="progress-count">4</strong>
+                <span>In Progress</span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="support-band">
+        <div class="support-main">
+          <div class="support-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M8 10H8.01M12 10H12.01M16 10H16.01M7 18V14H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-6l-6 4Z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div>
+            <strong>मदद चाहिए? (Need Support?)</strong>
+            <span>हमारे एक्सपर्ट्स से संपर्क करें</span>
+          </div>
+        </div>
+
+        <div class="support-mail">
+          <span>Email for support</span>
+          <a href="mailto:GoMico.official@gmail.com">
+            GoMico.official@gmail.com
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <div>© 2025 GoMico India. All rights reserved.</div>
+        <nav class="footer-links" aria-label="Footer links">
+          <a href="#">Contact</a>
+          <a href="#">Terms</a>
+          <a href="#">Privacy</a>
+        </nav>
+      </footer>
+    </main>
+  </div>
+
+<script>
+  const fallbackProfile = {
+    name: "Aman Singh",
+    city: "Bhopal",
+    role: "mechanic",
+    experience: "5-10 Years",
+    expertise: ["Electrical & Wiring"],
+    phone: "9998887776"
+  };
+
+  const courses = [
+    {
+      title: "EV Repair Basics",
+      desc: "Electric Vehicle battery, motor, and safety basics.",
+      progress: 100,
+      leftAction: "🏅 Download Certificate",
+      rightAction: "Learn Again →",
+      highlight: true
+    },
+    {
+      title: "BS6 & DPF System",
+      desc: "Understanding BS6 emission norms and DPF regeneration.",
+      progress: 70,
+      leftAction: "🔒 Certificate Locked",
+      rightAction: "Continue Learning →",
+      highlight: false
+    },
+    {
+      title: "Car AC Repair",
+      desc: "Complete guide to Car Air Conditioning systems.",
+      progress: 0,
+      leftAction: "🔒 Certificate Locked",
+      rightAction: "Start Course →",
+      highlight: false
+    },
+    {
+      title: "Automobile Electrical",
+      desc: "Wiring, fuses, relays, and sensors.",
+      progress: 0,
+      leftAction: "🔒 Certificate Locked",
+      rightAction: "Start Course →",
+      highlight: false
+    }
+  ];
+
+  const stored = localStorage.getItem("gomicoProfile");
+  const profile = stored ? { ...fallbackProfile, ...JSON.parse(stored) } : fallbackProfile;
+
+  const initials = profile.name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("") || "GM";
+
+  document.getElementById("avatar").textContent = initials;
+  document.getElementById("profile-name").textContent = profile.name;
+  document.getElementById("profile-role").textContent =
+    profile.role === "mechanic" ? "मैकेनिक (Mechanic)" :
+    profile.role === "owner" ? "मालिक (Owner)" :
+    "छात्र (Student)";
+  document.getElementById("profile-city").textContent = `शहर: ${profile.city}`;
+  document.getElementById("profile-exp").textContent = `अनुभव: ${profile.experience || fallbackProfile.experience}`;
+
+  const courseStack = document.getElementById("course-stack");
+  courseStack.innerHTML = courses.map((course) => `
+    <article class="course-card ${course.highlight ? "highlight" : ""}">
+      <div class="course-head">
+        <div class="course-icon" aria-hidden="true">⚡</div>
+        <div class="course-copy">
+          <h3>${course.title}</h3>
+          <p>${course.desc}</p>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span>Progress</span>
+          <strong>${course.progress}%</strong>
+        </div>
+        <div class="bar">
+          <div class="bar-fill" style="width:${course.progress}%"></div>
+        </div>
+      </div>
+
+      <div class="course-actions">
+        <button class="chip-action ${course.progress === 100 ? "success" : ""}" type="button">${course.leftAction}</button>
+        <a class="link-action" href="#">${course.rightAction}</a>
+      </div>
+    </article>
+  `).join("");
+
+  const completedCourses = courses.filter((course) => course.progress === 100).length;
+  document.getElementById("completed-count").textContent = String(completedCourses);
+  document.getElementById("progress-count").textContent = "4";
+
+  document.getElementById("edit-profile").addEventListener("click", () => {
+    window.location.href = "onboarding.html";
+  });
+
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    localStorage.removeItem("gomicoProfile");
+    window.location.href = "onboarding.html";
+  });
+</script>
+</body>
+</html>
+

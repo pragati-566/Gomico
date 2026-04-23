@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>GoMico Admin · Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-0:#04110d;
+    --ink-1:#071712;
+    --ink-2:#0a2019;
+    --ink-3:#123228;
+    --ink-4:#1b322c;
+    --ink-5:#203a32;
+    --lime:#92fc05;
+    --lime-deep:#5ba000;
+    --blue:#54a4ff;
+    --teal:#11c7a5;
+    --gold:#ffc93d;
+    --violet:#b97cff;
+    --white:#ffffff;
+    --muted:#b6cac4;
+    --muted-2:rgba(255,255,255,.68);
+    --border:rgba(255,255,255,.1);
+    --shadow:0 28px 80px rgba(0,0,0,.34);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    font-family:"DM Sans","Noto Sans Devanagari",system-ui,sans-serif;
+    color:var(--white);
+    background:
+      radial-gradient(circle at 15% 15%, rgba(146,252,5,.14), transparent 24%),
+      radial-gradient(circle at 88% 70%, rgba(84,164,255,.14), transparent 28%),
+      linear-gradient(180deg, #05140f 0%, #04110d 100%);
+    overflow-x:hidden;
+  }
+
+  a{color:inherit;text-decoration:none}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+
+  .page{
+    position:relative;
+    min-height:100vh;
+  }
+
+  .page::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(rgba(146,252,5,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(146,252,5,.045) 1px, transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(circle at 50% 10%, #000 8%, transparent 85%);
+    opacity:.46;
+    pointer-events:none;
+  }
+
+  .container{
+    position:relative;
+    width:min(1240px, calc(100% - 32px));
+    margin:0 auto;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:30;
+    backdrop-filter:blur(18px);
+    background:rgba(5,23,17,.78);
+    border-bottom:1px solid rgba(52,77,70,.8);
+  }
+
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    min-height:80px;
+    padding:14px 0;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+
+  .brand-logo{
+    display:block;
+    width:179px;
+    max-width:100%;
+    height:auto;
+    flex:0 0 auto;
+  }
+
+  .topbar-center{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    flex:1;
+  }
+
+  .community-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:38px;
+    padding:0 18px;
+    border-radius:999px;
+    background:rgba(146,252,5,.12);
+    border:1px solid rgba(146,252,5,.3);
+    color:var(--lime);
+    font-size:14px;
+    font-weight:700;
+    text-align:center;
+  }
+
+  .topbar-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-height:40px;
+    padding:0 18px;
+    border-radius:12px;
+    border:1px solid transparent;
+    background:transparent;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:var(--lime); color:#05140f}
+  .btn.primary:hover{box-shadow:0 18px 34px rgba(146,252,5,.18)}
+  .btn.dark{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.08)}
+  .btn.dark:hover{background:rgba(255,255,255,.1)}
+  .btn.accent{background:rgba(84,164,255,.14); border-color:rgba(84,164,255,.28); color:var(--blue)}
+  .btn.ghost{border-color:rgba(255,255,255,.12); color:var(--muted)}
+
+  .hero{
+    padding:34px 0 28px;
+  }
+
+  .hero-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:28px;
+  }
+
+  .hero-copy h1{
+    margin:0;
+    font-size:clamp(36px, 5vw, 56px);
+    line-height:1;
+    letter-spacing:-.05em;
+    font-weight:800;
+  }
+
+  .hero-copy p{
+    margin:12px 0 0;
+    max-width:700px;
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  .nav-tabs{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .nav-tab{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:52px;
+    padding:0 24px;
+    border-radius:16px;
+    background:rgba(255,255,255,.08);
+    border:1px solid transparent;
+    color:#9ca8ad;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:-.03em;
+  }
+
+  .nav-tab.active{
+    background:var(--lime);
+    color:#04110d;
+    box-shadow:0 20px 44px rgba(146,252,5,.14);
+  }
+
+  .metrics-grid{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:18px;
+    margin-bottom:22px;
+  }
+
+  .metric-card,
+  .panel,
+  .mini-card{
+    background:rgba(10,32,25,.9);
+    border:1px solid var(--border);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(14px);
+  }
+
+  .metric-card{
+    padding:22px 24px;
+    min-height:154px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .metric-card::after{
+    content:"";
+    position:absolute;
+    right:-30px;
+    bottom:-34px;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.14), transparent 70%);
+    opacity:.36;
+  }
+
+  .metric-card h2{
+    margin:0;
+    color:#99a8ac;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+
+  .metric-value{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+  }
+
+  .metric-number{
+    font-size:52px;
+    line-height:.9;
+    font-weight:800;
+    letter-spacing:-.06em;
+  }
+
+  .metric-shift{
+    margin-bottom:8px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+  }
+
+  .metric-foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .metric-dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    display:inline-block;
+  }
+
+  .panels-grid{
+    display:grid;
+    grid-template-columns:minmax(0, 1.15fr) minmax(320px, .85fr);
+    gap:22px;
+  }
+
+  .panel{
+    padding:24px;
+  }
+
+  .panel-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:18px;
+  }
+
+  .panel-title{
+    margin:0;
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+
+  .panel-copy{
+    margin:8px 0 0;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+  }
+
+  .panel-controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .control,
+  .segmented{
+    min-height:44px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.04);
+    color:#fff;
+  }
+
+  .control{
+    min-width:124px;
+    padding:0 14px;
+  }
+
+  .segmented{
+    display:inline-flex;
+    align-items:center;
+    padding:4px;
+    gap:4px;
+  }
+
+  .segmented button{
+    min-height:34px;
+    padding:0 12px;
+    border:none;
+    background:transparent;
+    color:var(--muted);
+    border-radius:10px;
+    font-size:13px;
+    font-weight:800;
+  }
+
+  .segmented button.active{
+    background:var(--lime);
+    color:#05140f;
+  }
+
+  .chart-shell{
+    position:relative;
+    height:360px;
+    border-radius:22px;
+    padding:18px 16px 8px;
+    background:
+      linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    background-size:100% 25%, 14.28% 100%, auto;
+    border:1px solid rgba(255,255,255,.07);
+    overflow:hidden;
+  }
+
+  .chart-shell svg{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+
+  .chart-legend{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:14px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .legend-item{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .legend-swatch{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+  }
+
+  .two-col-bottom{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
+    gap:22px;
+    margin-top:22px;
+    padding-bottom:42px;
+  }
+
+  .donut-wrap{
+    display:grid;
+    grid-template-columns:minmax(0, 260px) minmax(0, 1fr);
+    gap:18px;
+    align-items:center;
+  }
+
+  .donut-stage{
+    position:relative;
+    width:min(100%, 260px);
+    aspect-ratio:1;
+    margin:0 auto;
+  }
+
+  .donut-stage svg{
+    width:100%;
+    height:100%;
+    transform:rotate(-90deg);
+  }
+
+  .donut-center{
+    position:absolute;
+    inset:50% auto auto 50%;
+    transform:translate(-50%, -50%);
+    width:124px;
+    height:124px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:rgba(7,23,18,.95);
+    border:1px solid rgba(255,255,255,.08);
+    text-align:center;
+  }
+
+  .donut-center strong{
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:-.05em;
+  }
+
+  .donut-center span{
+    color:var(--muted);
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .distribution-list{
+    display:grid;
+    gap:12px;
+  }
+
+  .distribution-item{
+    padding:14px 16px;
+    border-radius:18px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .distribution-item strong{
+    font-size:18px;
+    font-weight:800;
+  }
+
+  .distribution-label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:15px;
+    font-weight:700;
+  }
+
+  .course-list{
+    display:grid;
+    gap:16px;
+  }
+
+  .course-item{
+    padding:18px;
+    border-radius:20px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .course-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:12px;
+  }
+
+  .course-row strong{
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:-.02em;
+  }
+
+  .course-row span{
+    font-size:16px;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  .progress-track{
+    position:relative;
+    height:12px;
+    border-radius:999px;
+    background:#071310;
+    overflow:hidden;
+  }
+
+  .progress-fill{
+    position:absolute;
+    inset:0 auto 0 0;
+    border-radius:999px;
+  }
+
+  .mini-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:16px;
+    margin-top:18px;
+  }
+
+  .mini-card{
+    padding:18px;
+  }
+
+  .mini-card h3{
+    margin:0 0 8px;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+  }
+
+  .mini-card strong{
+    display:block;
+    font-size:34px;
+    line-height:1;
+    letter-spacing:-.05em;
+  }
+
+  .mini-card p{
+    margin:10px 0 0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  .foot-note{
+    margin-top:18px;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  @media (max-width: 1180px){
+    .metrics-grid{
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+    }
+
+    .panels-grid,
+    .two-col-bottom{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media (max-width: 920px){
+    .topbar-inner,
+    .hero-head,
+    .panel-head{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .topbar-center,
+    .topbar-actions{
+      width:100%;
+      justify-content:flex-start;
+    }
+
+    .metrics-grid{
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .panel-controls{
+      width:100%;
+      justify-content:flex-start;
+    }
+
+    .donut-wrap{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media (max-width: 640px){
+    .container{
+      width:min(100% - 20px, 1240px);
+    }
+
+    .brand-logo{
+      width:140px;
+    }
+
+    .community-pill{
+      width:100%;
+    }
+
+    .nav-tabs{
+      width:100%;
+    }
+
+    .nav-tab{
+      min-width:calc(50% - 6px);
+      flex:1;
+      padding:0 18px;
+      font-size:16px;
+    }
+
+    .metrics-grid,
+    .mini-grid{
+      grid-template-columns:1fr;
+    }
+
+    .metric-card,
+    .panel,
+    .mini-card{
+      border-radius:22px;
+    }
+
+    .metric-number{
+      font-size:42px;
+    }
+
+    .panel-title{
+      font-size:24px;
+    }
+
+    .control{
+      width:100%;
+    }
+
+    .segmented{
+      width:100%;
+      justify-content:space-between;
+    }
+
+    .segmented button{
+      flex:1;
+      min-width:0;
+      padding:0 8px;
+    }
+
+    .chart-shell{
+      height:290px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
+        </a>
+
+        <div class="topbar-center">
+          <div class="community-pill">India's #1 Growing Mechanic Community</div>
+        </div>
+
+        <div class="topbar-actions">
+          <a class="btn primary" href="index.html">Close Admin</a>
+          <a class="btn dark" href="admin-events.html">Admin Events</a>
+          <a class="btn ghost" href="login.html">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container hero">
+      <section class="hero-head">
+        <div class="hero-copy">
+          <h1>Admin Dashboard</h1>
+          <p>Track registrations, user growth, activation, and learning performance in one place. Everything here is powered by dummy data so the interface can be wired into your backend later without redesigning the experience.</p>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Admin sections">
+          <a class="nav-tab active" href="admin-dashboard.html">Overview</a>
+          <a class="nav-tab" href="admin-users.html">User Management</a>
+          <a class="nav-tab" href="admin-events.html">Events</a>
+        </nav>
+      </section>
+
+      <section class="metrics-grid" id="metricGrid"></section>
+
+      <section class="panels-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Registration Trends</h2>
+              <p class="panel-copy">Switch between daily, weekly, monthly, quarterly, and yearly views. Quarter and year filters update the chart and top-level metrics together.</p>
+            </div>
+
+            <div class="panel-controls">
+              <select class="control" id="periodSelect" aria-label="Chart period">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+
+              <div class="segmented" id="quarterFilter" aria-label="Quarter filter">
+                <button class="active" data-quarter="Q1">Q1</button>
+                <button data-quarter="Q2">Q2</button>
+                <button data-quarter="Q3">Q3</button>
+                <button data-quarter="Q4">Q4</button>
+              </div>
+
+              <select class="control" id="yearSelect" aria-label="Year filter">
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+
+              <input class="control" id="dateRange" type="date" aria-label="Date selector" value="2026-04-21" />
+            </div>
+          </div>
+
+          <div class="chart-shell">
+            <svg id="trendChart" viewBox="0 0 700 320" preserveAspectRatio="none" aria-label="Registration trend chart"></svg>
+          </div>
+
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--lime)"></span> Registrations</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--blue)"></span> Selected range baseline</span>
+            <span class="legend-item" id="chartSummary">Showing daily registrations for Q1 2026</span>
+          </div>
+        </article>
+
+        <aside class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">User Distribution</h2>
+              <p class="panel-copy">Live split of users by mechanic, owner, and student roles for the currently selected year.</p>
+            </div>
+          </div>
+
+          <div class="donut-wrap">
+            <div class="donut-stage">
+              <svg id="donutChart" viewBox="0 0 240 240" aria-label="User distribution chart"></svg>
+              <div class="donut-center">
+                <strong id="donutTotal">0</strong>
+                <span>Total Users</span>
+              </div>
+            </div>
+
+            <div class="distribution-list" id="distributionList"></div>
+          </div>
+
+          <div class="mini-grid" id="miniStats"></div>
+        </aside>
+      </section>
+
+      <section class="two-col-bottom">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Course Completion Rate</h2>
+              <p class="panel-copy">Per-course completion health based on enrolled users and certificates issued in the selected reporting window.</p>
+            </div>
+            <a class="btn dark" href="admin-users.html">Inspect Learners</a>
+          </div>
+
+          <div class="course-list" id="courseList"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Admin Notes</h2>
+              <p class="panel-copy">Quick operational context for the team running onboarding, referrals, and certification audits.</p>
+            </div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="mini-card">
+              <h3>Active Users (7D)</h3>
+              <strong id="activeUsersValue">0</strong>
+              <p>Users who opened Gomico or progressed through at least one course in the last seven days.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Certificates Issued</h3>
+              <strong id="certificatesValue">0</strong>
+              <p>Issued certificates across all four dummy courses in the current time filter.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Referral Conversion</h3>
+              <strong id="referralValue">0%</strong>
+              <p>Share of registrations that came from referral codes or workshop partner onboarding.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Needs Attention</h3>
+              <strong id="attentionValue">0</strong>
+              <p>Users with inactive accounts, low progress, or incomplete course enrollment data.</p>
+            </div>
+          </div>
+
+          <p class="foot-note">Dummy admin actions are intentionally non-destructive here, but the layout is already structured so we can wire real API calls, permissions, and backend analytics later without reworking the page shell.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+<script>
+  const dashboardData = {
+    2026: {
+      totals: {
+        users: 4821,
+        mechanics: 3012,
+        owners: 1087,
+        students: 722,
+        active7d: 1488,
+        certificates: 1964,
+        referralRate: 38,
+        attention: 126
+      },
+      periods: {
+        daily: {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          values: [64, 88, 72, 121, 104, 156, 118]
+        },
+        weekly: {
+          labels: ["W1", "W2", "W3", "W4", "W5", "W6"],
+          values: [362, 411, 438, 396, 482, 518]
+        },
+        monthly: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+          values: [840, 910, 1022, 1186, 1264, 1390]
+        },
+        quarterly: {
+          labels: ["Q1", "Q2", "Q3", "Q4"],
+          values: [2772, 3198, 3450, 3928]
+        },
+        yearly: {
+          labels: ["2022", "2023", "2024", "2025", "2026"],
+          values: [1120, 1940, 2685, 3692, 4821]
+        }
+      },
+      courses: [
+        { name: "EV Repair Basics", rate: 84, learners: 2640, color: "var(--lime)" },
+        { name: "BS6 & DPF System", rate: 71, learners: 2142, color: "var(--blue)" },
+        { name: "Car AC Repair", rate: 67, learners: 1824, color: "var(--teal)" },
+        { name: "Automobile Electrical", rate: 76, learners: 2258, color: "var(--gold)" }
+      ]
+    },
+    2025: {
+      totals: {
+        users: 3692,
+        mechanics: 2334,
+        owners: 842,
+        students: 516,
+        active7d: 1139,
+        certificates: 1426,
+        referralRate: 32,
+        attention: 94
+      },
+      periods: {
+        daily: {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          values: [42, 56, 53, 74, 69, 96, 88]
+        },
+        weekly: {
+          labels: ["W1", "W2", "W3", "W4", "W5", "W6"],
+          values: [280, 304, 326, 341, 368, 392]
+        },
+        monthly: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+          values: [610, 684, 728, 771, 836, 910]
+        },
+        quarterly: {
+          labels: ["Q1", "Q2", "Q3", "Q4"],
+          values: [2022, 2338, 2674, 3010]
+        },
+        yearly: {
+          labels: ["2021", "2022", "2023", "2024", "2025"],
+          values: [740, 1120, 1940, 2685, 3692]
+        }
+      },
+      courses: [
+        { name: "EV Repair Basics", rate: 79, learners: 1986, color: "var(--lime)" },
+        { name: "BS6 & DPF System", rate: 66, learners: 1702, color: "var(--blue)" },
+        { name: "Car AC Repair", rate: 62, learners: 1498, color: "var(--teal)" },
+        { name: "Automobile Electrical", rate: 73, learners: 1838, color: "var(--gold)" }
+      ]
+    },
+    2024: {
+      totals: {
+        users: 2685,
+        mechanics: 1690,
+        owners: 608,
+        students: 387,
+        active7d: 812,
+        certificates: 1021,
+        referralRate: 28,
+        attention: 71
+      },
+      periods: {
+        daily: {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          values: [28, 34, 38, 44, 47, 56, 49]
+        },
+        weekly: {
+          labels: ["W1", "W2", "W3", "W4", "W5", "W6"],
+          values: [182, 206, 218, 236, 248, 263]
+        },
+        monthly: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+          values: [446, 482, 528, 554, 602, 648]
+        },
+        quarterly: {
+          labels: ["Q1", "Q2", "Q3", "Q4"],
+          values: [1428, 1664, 1940, 2218]
+        },
+        yearly: {
+          labels: ["2020", "2021", "2022", "2023", "2024"],
+          values: [420, 740, 1120, 1940, 2685]
+        }
+      },
+      courses: [
+        { name: "EV Repair Basics", rate: 74, learners: 1488, color: "var(--lime)" },
+        { name: "BS6 & DPF System", rate: 59, learners: 1206, color: "var(--blue)" },
+        { name: "Car AC Repair", rate: 56, learners: 1122, color: "var(--teal)" },
+        { name: "Automobile Electrical", rate: 68, learners: 1340, color: "var(--gold)" }
+      ]
+    }
+  };
+
+  const metricGrid = document.getElementById("metricGrid");
+  const trendChart = document.getElementById("trendChart");
+  const courseList = document.getElementById("courseList");
+  const distributionList = document.getElementById("distributionList");
+  const donutChart = document.getElementById("donutChart");
+  const donutTotal = document.getElementById("donutTotal");
+  const miniStats = document.getElementById("miniStats");
+  const chartSummary = document.getElementById("chartSummary");
+
+  const periodSelect = document.getElementById("periodSelect");
+  const yearSelect = document.getElementById("yearSelect");
+  const dateRange = document.getElementById("dateRange");
+  const quarterFilter = document.getElementById("quarterFilter");
+
+  const activeUsersValue = document.getElementById("activeUsersValue");
+  const certificatesValue = document.getElementById("certificatesValue");
+  const referralValue = document.getElementById("referralValue");
+  const attentionValue = document.getElementById("attentionValue");
+
+  const numberFormat = new Intl.NumberFormat("en-IN");
+  let selectedQuarter = "Q1";
+
+  const metricConfig = [
+    { key: "users", label: "Total Registered Users", color: "var(--blue)", hint: "All roles" },
+    { key: "active7d", label: "Active Users (7D)", color: "#45e58d", hint: "Last 7 days" },
+    { key: "mechanics", label: "Total Mechanics", color: "var(--gold)", hint: "Mechanic accounts" },
+    { key: "owners", label: "Total Workshop Owners", color: "var(--violet)", hint: "Workshop owners" },
+    { key: "students", label: "Total Students", color: "var(--teal)", hint: "Student accounts" }
+  ];
+
+  function formatNumber(value){
+    return numberFormat.format(value);
+  }
+
+  function createMetricCards(data){
+    metricGrid.innerHTML = metricConfig.map((item, index) => {
+      const value = data.totals[item.key];
+      const shifts = ["+12.4%", "+8.1%", "+10.7%", "+6.3%", "+9.2%"];
+      return `
+        <article class="metric-card">
+          <h2>${item.label}</h2>
+          <div class="metric-value">
+            <span class="metric-number" style="color:${item.color}">${formatNumber(value)}</span>
+            <span class="metric-shift">${shifts[index]}</span>
+          </div>
+          <div class="metric-foot">
+            <span><span class="metric-dot" style="background:${item.color}"></span> ${item.hint}</span>
+            <span>${yearSelect.value}</span>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function buildLineChart(labels, values){
+    const width = 700;
+    const height = 320;
+    const paddingX = 42;
+    const paddingTop = 20;
+    const paddingBottom = 34;
+    const usableHeight = height - paddingTop - paddingBottom;
+    const usableWidth = width - paddingX * 2;
+    const maxValue = Math.max(...values) * 1.15;
+
+    const points = values.map((value, index) => {
+      const x = paddingX + (usableWidth / Math.max(labels.length - 1, 1)) * index;
+      const y = paddingTop + usableHeight - (value / maxValue) * usableHeight;
+      return { x, y, value, label: labels[index] };
+    });
+
+    const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+    const area = `${path} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`;
+    const baseline = `M ${paddingX} ${height - paddingBottom} L ${width - paddingX} ${height - paddingBottom}`;
+
+    const yTicks = [0, .25, .5, .75, 1].map((step) => {
+      const value = Math.round(maxValue * step);
+      const y = paddingTop + usableHeight - usableHeight * step;
+      return `
+        <g>
+          <line x1="${paddingX}" y1="${y}" x2="${width - paddingX}" y2="${y}" stroke="rgba(255,255,255,.05)" stroke-dasharray="4 6"/>
+          <text x="${paddingX - 10}" y="${y + 4}" text-anchor="end" fill="rgba(255,255,255,.46)" font-size="12" font-weight="700">${value}</text>
+        </g>
+      `;
+    }).join("");
+
+    const xLabels = points.map((point) => `
+      <text x="${point.x}" y="${height - 10}" text-anchor="middle" fill="rgba(255,255,255,.46)" font-size="12" font-weight="700">${point.label}</text>
+    `).join("");
+
+    const dots = points.map((point) => `
+      <g>
+        <circle cx="${point.x}" cy="${point.y}" r="6" fill="rgba(146,252,5,.22)"></circle>
+        <circle cx="${point.x}" cy="${point.y}" r="3.6" fill="var(--lime)"></circle>
+      </g>
+    `).join("");
+
+    trendChart.innerHTML = `
+      <defs>
+        <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(146,252,5,.32)" />
+          <stop offset="100%" stop-color="rgba(146,252,5,0)" />
+        </linearGradient>
+      </defs>
+      ${yTicks}
+      <path d="${baseline}" stroke="rgba(84,164,255,.32)" stroke-width="2" />
+      <path d="${area}" fill="url(#areaFill)"></path>
+      <path d="${path}" fill="none" stroke="var(--lime)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${dots}
+      ${xLabels}
+    `;
+  }
+
+  function renderDonut(data){
+    const parts = [
+      { label: "Mechanic", value: data.totals.mechanics, color: "var(--blue)" },
+      { label: "Owner", value: data.totals.owners, color: "var(--teal)" },
+      { label: "Student", value: data.totals.students, color: "var(--gold)" }
+    ];
+    const total = parts.reduce((sum, item) => sum + item.value, 0);
+    const radius = 80;
+    const circumference = 2 * Math.PI * radius;
+    let offset = 0;
+
+    donutChart.innerHTML = `
+      <circle cx="120" cy="120" r="${radius}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="34"></circle>
+      ${parts.map((item) => {
+        const length = (item.value / total) * circumference;
+        const segment = `
+          <circle
+            cx="120"
+            cy="120"
+            r="${radius}"
+            fill="none"
+            stroke="${item.color}"
+            stroke-width="34"
+            stroke-linecap="round"
+            stroke-dasharray="${length} ${circumference - length}"
+            stroke-dashoffset="${-offset}"
+          ></circle>
+        `;
+        offset += length;
+        return segment;
+      }).join("")}
+    `;
+
+    donutTotal.textContent = formatNumber(total);
+    distributionList.innerHTML = parts.map((item) => {
+      const ratio = ((item.value / total) * 100).toFixed(1);
+      return `
+        <div class="distribution-item">
+          <div class="distribution-label">
+            <span class="legend-swatch" style="background:${item.color}"></span>
+            <span>${item.label}</span>
+          </div>
+          <strong>${formatNumber(item.value)} <span style="color:var(--muted);font-size:13px;">${ratio}%</span></strong>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderMiniStats(data){
+    const cards = [
+      { label: "Quarterly Growth", value: "+14.8%", copy: "Compared to the previous quarter", color: "var(--lime)" },
+      { label: "Monthly Average", value: formatNumber(Math.round(data.totals.users / 6)), copy: "Average new registrations", color: "var(--blue)" },
+      { label: "Workshop Verified", value: formatNumber(Math.round(data.totals.owners * .78)), copy: "Owners with verified workshops", color: "var(--violet)" },
+      { label: "Student Conversion", value: "61%", copy: "Students moved into learning flow", color: "var(--gold)" }
+    ];
+
+    miniStats.innerHTML = cards.map((item) => `
+      <div class="mini-card">
+        <h3>${item.label}</h3>
+        <strong style="color:${item.color}">${item.value}</strong>
+        <p>${item.copy}</p>
+      </div>
+    `).join("");
+  }
+
+  function renderCourses(data){
+    courseList.innerHTML = data.courses.map((course) => `
+      <div class="course-item">
+        <div class="course-row">
+          <strong>${course.name}</strong>
+          <span>${course.rate}%</span>
+        </div>
+        <div class="progress-track">
+          <span class="progress-fill" style="width:${course.rate}%;background:${course.color}"></span>
+        </div>
+        <p style="margin:12px 0 0;color:var(--muted);font-size:13px;">${formatNumber(course.learners)} learners enrolled in this course.</p>
+      </div>
+    `).join("");
+  }
+
+  function updateNotes(data){
+    activeUsersValue.textContent = formatNumber(data.totals.active7d);
+    certificatesValue.textContent = formatNumber(data.totals.certificates);
+    referralValue.textContent = `${data.totals.referralRate}%`;
+    attentionValue.textContent = formatNumber(data.totals.attention);
+  }
+
+  function renderDashboard(){
+    const year = yearSelect.value;
+    const period = periodSelect.value;
+    const data = dashboardData[year];
+    const periodData = data.periods[period];
+
+    createMetricCards(data);
+    buildLineChart(periodData.labels, periodData.values);
+    renderDonut(data);
+    renderMiniStats(data);
+    renderCourses(data);
+    updateNotes(data);
+
+    chartSummary.textContent = `Showing ${period} registrations for ${selectedQuarter} ${year} · date ${dateRange.value}`;
+  }
+
+  quarterFilter.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      quarterFilter.querySelectorAll("button").forEach((node) => node.classList.remove("active"));
+      button.classList.add("active");
+      selectedQuarter = button.dataset.quarter;
+      renderDashboard();
+    });
+  });
+
+  periodSelect.addEventListener("change", renderDashboard);
+  yearSelect.addEventListener("change", renderDashboard);
+  dateRange.addEventListener("change", renderDashboard);
+
+  renderDashboard();
+</script>
+</body>
+</html>
+

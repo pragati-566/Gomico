@@ -1,0 +1,1577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>GoMico Admin · User Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-0:#04110d;
+    --ink-1:#071712;
+    --ink-2:#0a2019;
+    --ink-3:#122821;
+    --ink-4:#1c342d;
+    --white:#ffffff;
+    --muted:#b6cac4;
+    --muted-2:rgba(255,255,255,.7);
+    --border:rgba(255,255,255,.1);
+    --lime:#92fc05;
+    --lime-deep:#5ba000;
+    --blue:#54a4ff;
+    --teal:#11c7a5;
+    --gold:#ffc93d;
+    --violet:#b97cff;
+    --red:#ff6363;
+    --shadow:0 28px 80px rgba(0,0,0,.34);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    font-family:"DM Sans","Noto Sans Devanagari",system-ui,sans-serif;
+    color:var(--white);
+    background:
+      radial-gradient(circle at 16% 12%, rgba(146,252,5,.14), transparent 26%),
+      radial-gradient(circle at 88% 84%, rgba(84,164,255,.11), transparent 26%),
+      linear-gradient(180deg, #05140f 0%, #04110d 100%);
+    overflow-x:hidden;
+  }
+
+  a{color:inherit;text-decoration:none}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+
+  .page{
+    position:relative;
+    min-height:100vh;
+  }
+
+  .page::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(rgba(146,252,5,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(146,252,5,.045) 1px, transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(circle at 50% 10%, #000 8%, transparent 85%);
+    opacity:.46;
+    pointer-events:none;
+  }
+
+  .container{
+    position:relative;
+    width:min(1320px, calc(100% - 32px));
+    margin:0 auto;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:30;
+    backdrop-filter:blur(18px);
+    background:rgba(5,23,17,.78);
+    border-bottom:1px solid rgba(52,77,70,.8);
+  }
+
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    min-height:80px;
+    padding:14px 0;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .brand-logo{
+    display:block;
+    width:179px;
+    max-width:100%;
+    height:auto;
+    flex:0 0 auto;
+  }
+
+  .topbar-center{
+    flex:1;
+    display:flex;
+    justify-content:center;
+  }
+
+  .community-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:38px;
+    padding:0 18px;
+    border-radius:999px;
+    background:rgba(146,252,5,.12);
+    border:1px solid rgba(146,252,5,.3);
+    color:var(--lime);
+    font-size:14px;
+    font-weight:700;
+    text-align:center;
+  }
+
+  .topbar-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-height:40px;
+    padding:0 18px;
+    border-radius:12px;
+    border:1px solid transparent;
+    background:transparent;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:var(--lime); color:#05140f}
+  .btn.primary:hover{box-shadow:0 18px 34px rgba(146,252,5,.18)}
+  .btn.dark{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.08)}
+  .btn.dark:hover{background:rgba(255,255,255,.1)}
+  .btn.accent{background:rgba(84,164,255,.14); border-color:rgba(84,164,255,.28); color:var(--blue)}
+  .btn.ghost{border-color:rgba(255,255,255,.12); color:var(--muted)}
+  .btn.warn{background:rgba(255,99,99,.12); border-color:rgba(255,99,99,.22); color:#ff8080}
+
+  .hero{
+    padding:34px 0 40px;
+  }
+
+  .hero-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:28px;
+  }
+
+  .hero-copy h1{
+    margin:0;
+    font-size:clamp(36px, 5vw, 56px);
+    line-height:1;
+    letter-spacing:-.05em;
+    font-weight:800;
+  }
+
+  .hero-copy p{
+    margin:12px 0 0;
+    max-width:720px;
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  .nav-tabs{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .nav-tab{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:52px;
+    padding:0 24px;
+    border-radius:16px;
+    background:rgba(255,255,255,.08);
+    border:1px solid transparent;
+    color:#9ca8ad;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:-.03em;
+  }
+
+  .nav-tab.active{
+    background:var(--lime);
+    color:#04110d;
+    box-shadow:0 20px 44px rgba(146,252,5,.14);
+  }
+
+  .toolbar,
+  .table-shell,
+  .mobile-list .user-card,
+  .drawer-panel{
+    background:rgba(10,32,25,.9);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(14px);
+  }
+
+  .toolbar{
+    border-radius:28px;
+    padding:24px;
+    display:grid;
+    gap:18px;
+  }
+
+  .toolbar-top,
+  .toolbar-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  .field-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    flex:1;
+  }
+
+  .control{
+    min-height:48px;
+    padding:0 16px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(0,0,0,.12);
+    color:#fff;
+    min-width:148px;
+  }
+
+  .search{
+    min-width:min(360px, 100%);
+    flex:1 1 280px;
+  }
+
+  .toolbar-copy{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+  }
+
+  .table-shell{
+    margin-top:22px;
+    border-radius:28px;
+    overflow:hidden;
+  }
+
+  .table-wrap{
+    overflow:auto;
+  }
+
+  table{
+    width:100%;
+    min-width:1540px;
+    border-collapse:collapse;
+  }
+
+  thead th{
+    background:rgba(255,255,255,.06);
+    color:#97a5aa;
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    text-align:left;
+    padding:18px 16px;
+    white-space:nowrap;
+  }
+
+  tbody td{
+    padding:18px 16px;
+    border-top:1px solid rgba(255,255,255,.07);
+    vertical-align:top;
+    font-size:14px;
+  }
+
+  tbody tr:hover{
+    background:rgba(255,255,255,.03);
+  }
+
+  .check-cell{
+    width:46px;
+  }
+
+  .checkbox{
+    width:18px;
+    height:18px;
+    border-radius:4px;
+    accent-color:var(--lime);
+  }
+
+  .user-name{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+
+  .user-name strong{
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+
+  .user-name span,
+  .muted{
+    color:var(--muted);
+  }
+
+  .role-pill,
+  .status-pill,
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:26px;
+    padding:0 10px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:800;
+    line-height:1;
+  }
+
+  .role-pill.mechanic{background:rgba(255,201,61,.14); color:var(--gold)}
+  .role-pill.owner{background:rgba(185,124,255,.14); color:var(--violet)}
+  .role-pill.student{background:rgba(17,199,165,.14); color:var(--teal)}
+  .status-pill.active{background:rgba(69,229,141,.14); color:#45e58d}
+  .status-pill.blocked{background:rgba(255,99,99,.14); color:#ff8080}
+  .badge.ready{background:rgba(146,252,5,.14); color:var(--lime)}
+  .badge.pending{background:rgba(84,164,255,.14); color:var(--blue)}
+
+  .progress-stack{
+    display:grid;
+    gap:8px;
+    min-width:220px;
+  }
+
+  .progress-mini{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    gap:10px;
+    align-items:center;
+  }
+
+  .progress-mini span{
+    font-size:12px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+
+  .progress-track{
+    position:relative;
+    height:8px;
+    border-radius:999px;
+    background:#071310;
+    overflow:hidden;
+  }
+
+  .progress-fill{
+    position:absolute;
+    inset:0 auto 0 0;
+    border-radius:999px;
+    background:var(--lime);
+  }
+
+  .actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .action-link{
+    border:none;
+    background:none;
+    padding:0;
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .action-link.view{color:#d7e4de}
+  .action-link.edit{color:var(--blue)}
+  .action-link.block{color:#ff9b6f}
+  .action-link.delete{color:#ff6c6c}
+  .action-link.reset{color:var(--lime)}
+
+  .mobile-list{
+    display:none;
+    margin-top:22px;
+    gap:16px;
+  }
+
+  .mobile-list .user-card{
+    border-radius:22px;
+    padding:18px;
+    display:grid;
+    gap:14px;
+  }
+
+  .card-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .card-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  .card-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+  }
+
+  .card-grid div{
+    padding:12px;
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .card-grid strong{
+    display:block;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+
+  .card-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .drawer{
+    position:fixed;
+    inset:0;
+    display:none;
+    z-index:60;
+  }
+
+  .drawer.open{
+    display:block;
+  }
+
+  .drawer-backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.56);
+    backdrop-filter:blur(6px);
+  }
+
+  .drawer-panel{
+    position:absolute;
+    top:0;
+    right:0;
+    width:min(440px, 100%);
+    height:100%;
+    border-left:1px solid rgba(255,255,255,.08);
+    padding:26px 22px 24px;
+    overflow:auto;
+  }
+
+  .drawer-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:22px;
+  }
+
+  .drawer-title{
+    margin:0;
+    font-size:18px;
+    font-weight:800;
+  }
+
+  .close-btn{
+    border:none;
+    background:none;
+    color:#85969c;
+    font-size:26px;
+    line-height:1;
+    padding:0;
+  }
+
+  .profile-top{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:20px;
+  }
+
+  .avatar{
+    width:66px;
+    height:66px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    font-size:26px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .drawer-name{
+    margin:0;
+    font-size:18px;
+    font-weight:800;
+  }
+
+  .drawer-phone{
+    margin:4px 0 10px;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  .drawer-section{
+    padding-top:18px;
+    margin-top:18px;
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+
+  .drawer-section h3{
+    margin:0 0 16px;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.01em;
+  }
+
+  .info-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+  }
+
+  .info-card{
+    padding:14px;
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .info-card strong{
+    display:block;
+    margin-bottom:8px;
+    color:#95a7ac;
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .referral-card{
+    padding:16px;
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .course-progress{
+    display:grid;
+    gap:12px;
+  }
+
+  .course-progress .course-item{
+    padding:14px;
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .course-item .row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+
+  .drawer-actions{
+    display:grid;
+    gap:10px;
+    margin-top:22px;
+  }
+
+  .confirm-modal{
+    position:fixed;
+    inset:0;
+    display:none;
+    z-index:80;
+  }
+
+  .confirm-modal.open{
+    display:block;
+  }
+
+  .confirm-backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.64);
+    backdrop-filter:blur(8px);
+  }
+
+  .confirm-dialog{
+    position:relative;
+    width:min(520px, calc(100% - 24px));
+    margin:10vh auto 0;
+    padding:24px;
+    border-radius:28px;
+    background:rgba(10,32,25,.96);
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:var(--shadow);
+  }
+
+  .confirm-dialog h3{
+    margin:0;
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+
+  .confirm-dialog p{
+    margin:14px 0 0;
+    color:var(--muted);
+    line-height:1.6;
+  }
+
+  .confirm-hint{
+    margin-top:16px;
+    padding:14px 16px;
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+    color:#fff;
+    font-size:14px;
+  }
+
+  .confirm-hint strong{
+    color:#ff9b9b;
+    letter-spacing:.08em;
+  }
+
+  .confirm-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+
+  @media (max-width: 1120px){
+    .hero-head,
+    .toolbar-top,
+    .toolbar-bottom{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .topbar-inner{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .topbar-center,
+    .topbar-actions{
+      width:100%;
+      justify-content:flex-start;
+    }
+
+    .field-row{
+      width:100%;
+    }
+  }
+
+  @media (max-width: 860px){
+    .table-shell{
+      display:none;
+    }
+
+    .mobile-list{
+      display:grid;
+    }
+
+    .card-grid,
+    .info-grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media (max-width: 640px){
+    .container{
+      width:min(100% - 20px, 1320px);
+    }
+
+    .brand-logo{
+      width:140px;
+    }
+
+    .community-pill{
+      width:100%;
+    }
+
+    .nav-tabs{
+      width:100%;
+    }
+
+    .nav-tab{
+      min-width:calc(50% - 6px);
+      flex:1;
+      padding:0 18px;
+      font-size:16px;
+    }
+
+    .control,
+    .search{
+      width:100%;
+      min-width:0;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
+        </a>
+
+        <div class="topbar-center">
+          <div class="community-pill">India's #1 Growing Mechanic Community</div>
+        </div>
+
+        <div class="topbar-actions">
+          <a class="btn primary" href="index.html">Close Admin</a>
+          <a class="btn dark" href="admin-events.html">Admin Events</a>
+          <a class="btn ghost" href="login.html">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container hero">
+      <section class="hero-head">
+        <div class="hero-copy">
+          <h1>User Management</h1>
+          <p>Search, filter, inspect, and operate on Gomico users across mechanics, workshop owners, and students. This view includes the complete admin table you described plus a responsive mobile card layout and a working side drawer for full profile details.</p>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Admin sections">
+          <a class="nav-tab" href="admin-dashboard.html">Overview</a>
+          <a class="nav-tab active" href="admin-users.html">User Management</a>
+          <a class="nav-tab" href="admin-events.html">Events</a>
+        </nav>
+      </section>
+
+      <section class="toolbar">
+        <div class="toolbar-top">
+          <div class="field-row">
+            <input class="control search" id="searchInput" type="search" placeholder="Search by name, phone, or city..." aria-label="Search users" />
+            <select class="control" id="roleFilter" aria-label="Filter by role">
+              <option value="all">All Roles</option>
+              <option value="mechanic">Mechanic</option>
+              <option value="owner">Owner</option>
+              <option value="student">Student</option>
+            </select>
+            <select class="control" id="cityFilter" aria-label="Filter by city">
+              <option value="all">All Cities</option>
+            </select>
+            <select class="control" id="courseFilter" aria-label="Filter by course completion">
+              <option value="all">All Course Levels</option>
+              <option value="completed">Completed 2+ Courses</option>
+              <option value="partial">Partial Progress</option>
+              <option value="new">New / Under 20%</option>
+            </select>
+          </div>
+
+          <div class="field-row" style="justify-content:flex-end;">
+            <button class="btn primary" id="exportPdfBtn" type="button">Export PDF</button>
+            <button class="btn accent" id="exportCsvBtn" type="button">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="toolbar-bottom">
+          <div class="field-row">
+            <select class="control" id="joinedFilter" aria-label="Filter by join date">
+              <option value="all">Date Joined</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="365">Last 12 Months</option>
+            </select>
+            <select class="control" id="experienceFilter" aria-label="Filter by experience level">
+              <option value="all">Experience Level</option>
+              <option value="beginner">Beginner</option>
+              <option value="mid">Mid Level</option>
+              <option value="expert">Expert</option>
+            </select>
+            <select class="control" id="expertiseFilter" aria-label="Filter by expertise">
+              <option value="all">Expertise</option>
+              <option value="electrical">Electrical</option>
+              <option value="diagnostics">Diagnostics</option>
+              <option value="ac">AC Repair</option>
+              <option value="bs6">BS6 / DPF</option>
+              <option value="ev">EV Systems</option>
+            </select>
+          </div>
+
+          <p class="toolbar-copy" id="resultSummary">Showing 0 users</p>
+        </div>
+      </section>
+
+      <section class="table-shell">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="check-cell"><input class="checkbox" type="checkbox" aria-label="Select all users"></th>
+                <th>User ID</th>
+                <th>User</th>
+                <th>Phone</th>
+                <th>User Type</th>
+                <th>City</th>
+                <th>IP Address</th>
+                <th>Course Progress</th>
+                <th>Certificate</th>
+                <th>Referral Used</th>
+                <th>Last Login</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="userRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="mobile-list" id="mobileList"></section>
+    </main>
+
+    <section class="drawer" id="profileDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+        <div class="drawer-head">
+          <div>
+            <p class="muted" style="margin:0 0 6px;">User Details</p>
+            <h2 class="drawer-title" id="drawerTitle">Profile</h2>
+          </div>
+          <button class="close-btn" id="drawerClose" type="button" aria-label="Close profile drawer">&times;</button>
+        </div>
+
+        <div class="profile-top">
+          <div class="avatar" id="drawerAvatar">👤</div>
+          <div>
+            <h3 class="drawer-name" id="drawerName">User Name</h3>
+            <p class="drawer-phone" id="drawerPhone">0000000000</p>
+            <div class="card-meta" id="drawerMeta"></div>
+          </div>
+        </div>
+
+        <div class="referral-card" id="drawerReferral">Referral Code</div>
+
+        <div class="drawer-section">
+          <h3>System Information</h3>
+          <div class="info-grid" id="drawerSystem"></div>
+        </div>
+
+        <div class="drawer-section">
+          <h3>Course Progress</h3>
+          <div class="course-progress" id="drawerCourses"></div>
+        </div>
+
+        <div class="drawer-section">
+          <h3>Role Details</h3>
+          <div class="info-grid" id="drawerRoleDetails"></div>
+        </div>
+
+        <div class="drawer-actions">
+          <button class="btn primary" id="drawerEdit" type="button">Edit User</button>
+          <button class="btn dark" id="drawerReset" type="button">Reset Progress</button>
+          <button class="btn warn" id="drawerBlock" type="button">Block User</button>
+          <button class="btn ghost" id="drawerDone" type="button">Close</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="confirm-modal" id="deleteModal" aria-hidden="true">
+      <div class="confirm-backdrop" id="deleteBackdrop"></div>
+      <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+        <h3 id="deleteTitle">Delete User</h3>
+        <p id="deleteCopy">This action permanently removes the selected user from the current admin list.</p>
+        <div class="confirm-hint">To confirm deletion, type <strong>DELETE</strong> exactly in the field below.</div>
+        <input class="control" id="deleteInput" type="text" placeholder="Type DELETE" autocomplete="off" aria-label="Type DELETE to confirm" style="width:100%;margin-top:16px;">
+        <div class="confirm-actions">
+          <button class="btn ghost" id="deleteCancel" type="button">Cancel</button>
+          <button class="btn warn" id="deleteConfirm" type="button" disabled>Delete User</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  const users = [
+    {
+      id: "GM-1024",
+      name: "Amit Singh",
+      phone: "9812345678",
+      type: "owner",
+      city: "Mumbai",
+      firstIp: "49.36.18.204",
+      lastIp: "49.36.18.204",
+      joined: "2026-03-11",
+      lastLogin: "2026-04-21 09:42",
+      status: "active",
+      certificate: "ready",
+      referral: "WORKSHOP10",
+      experience: "expert",
+      expertise: ["diagnostics", "ev"],
+      workshop: "Amit Auto EV Hub",
+      age: 36,
+      device: "iPhone 14",
+      os: "iOS 18 · Safari",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 100 },
+        { name: "BS6 & DPF System", progress: 92 },
+        { name: "Car AC Repair", progress: 76 },
+        { name: "Automobile Electrical", progress: 81 }
+      ]
+    },
+    {
+      id: "GM-1025",
+      name: "Vikram Patel",
+      phone: "7890123456",
+      type: "mechanic",
+      city: "Ahmedabad",
+      firstIp: "27.56.221.100",
+      lastIp: "27.56.221.194",
+      joined: "2026-02-14",
+      lastLogin: "2026-04-20 22:10",
+      status: "active",
+      certificate: "ready",
+      referral: "OWNERREF22",
+      experience: "expert",
+      expertise: ["electrical", "bs6", "ev"],
+      workshop: "Field Mechanic",
+      age: 31,
+      device: "Redmi Note 13",
+      os: "Android 15 · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 94 },
+        { name: "BS6 & DPF System", progress: 88 },
+        { name: "Car AC Repair", progress: 51 },
+        { name: "Automobile Electrical", progress: 67 }
+      ]
+    },
+    {
+      id: "GM-1026",
+      name: "Manoj Tiwari",
+      phone: "9988776655",
+      type: "mechanic",
+      city: "Patna",
+      firstIp: "103.85.114.21",
+      lastIp: "103.85.114.88",
+      joined: "2026-01-30",
+      lastLogin: "2026-04-17 18:26",
+      status: "blocked",
+      certificate: "pending",
+      referral: "NONE",
+      experience: "mid",
+      expertise: ["ac", "diagnostics"],
+      workshop: "Independent Garage",
+      age: 28,
+      device: "Samsung A55",
+      os: "Android 15 · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 42 },
+        { name: "BS6 & DPF System", progress: 39 },
+        { name: "Car AC Repair", progress: 74 },
+        { name: "Automobile Electrical", progress: 33 }
+      ]
+    },
+    {
+      id: "GM-1027",
+      name: "Anand Verma",
+      phone: "9123456780",
+      type: "owner",
+      city: "Indore",
+      firstIp: "106.201.88.91",
+      lastIp: "106.201.88.93",
+      joined: "2025-12-18",
+      lastLogin: "2026-04-19 07:14",
+      status: "active",
+      certificate: "ready",
+      referral: "EVLEAD44",
+      experience: "expert",
+      expertise: ["ev", "diagnostics"],
+      workshop: "Verma EV Point",
+      age: 40,
+      device: "MacBook Air",
+      os: "macOS · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 100 },
+        { name: "BS6 & DPF System", progress: 82 },
+        { name: "Car AC Repair", progress: 58 },
+        { name: "Automobile Electrical", progress: 73 }
+      ]
+    },
+    {
+      id: "GM-1028",
+      name: "David John",
+      phone: "7766554433",
+      type: "mechanic",
+      city: "Bangalore",
+      firstIp: "115.97.204.61",
+      lastIp: "115.97.204.61",
+      joined: "2026-04-02",
+      lastLogin: "2026-04-21 12:05",
+      status: "active",
+      certificate: "pending",
+      referral: "NONE",
+      experience: "mid",
+      expertise: ["electrical", "ev"],
+      workshop: "QuickFix EV",
+      age: 27,
+      device: "OnePlus 12R",
+      os: "Android 15 · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 68 },
+        { name: "BS6 & DPF System", progress: 24 },
+        { name: "Car AC Repair", progress: 12 },
+        { name: "Automobile Electrical", progress: 71 }
+      ]
+    },
+    {
+      id: "GM-1029",
+      name: "Mohammad Rafiq",
+      phone: "6655443322",
+      type: "mechanic",
+      city: "Kolkata",
+      firstIp: "157.48.119.91",
+      lastIp: "157.48.119.122",
+      joined: "2025-11-09",
+      lastLogin: "2026-04-16 15:38",
+      status: "active",
+      certificate: "pending",
+      referral: "GARAGE30",
+      experience: "mid",
+      expertise: ["bs6", "ac"],
+      workshop: "Rafiq Motors",
+      age: 33,
+      device: "Vivo V30",
+      os: "Android 15 · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 61 },
+        { name: "BS6 & DPF System", progress: 83 },
+        { name: "Car AC Repair", progress: 57 },
+        { name: "Automobile Electrical", progress: 22 }
+      ]
+    },
+    {
+      id: "GM-1030",
+      name: "Gurpreet Singh",
+      phone: "8877665544",
+      type: "owner",
+      city: "Chandigarh",
+      firstIp: "42.106.44.90",
+      lastIp: "42.106.44.142",
+      joined: "2026-03-02",
+      lastLogin: "2026-04-18 20:11",
+      status: "active",
+      certificate: "ready",
+      referral: "PARTNER11",
+      experience: "expert",
+      expertise: ["electrical", "diagnostics"],
+      workshop: "Punjab EV Clinic",
+      age: 38,
+      device: "Windows Laptop",
+      os: "Windows 11 · Edge",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 86 },
+        { name: "BS6 & DPF System", progress: 84 },
+        { name: "Car AC Repair", progress: 66 },
+        { name: "Automobile Electrical", progress: 79 }
+      ]
+    },
+    {
+      id: "GM-1031",
+      name: "Riya Sharma",
+      phone: "9001122334",
+      type: "student",
+      city: "Delhi",
+      firstIp: "223.178.82.54",
+      lastIp: "223.178.82.54",
+      joined: "2026-04-07",
+      lastLogin: "2026-04-21 08:56",
+      status: "active",
+      certificate: "pending",
+      referral: "CAMPUS01",
+      experience: "beginner",
+      expertise: ["ev"],
+      workshop: "Student",
+      age: 20,
+      device: "iPad Air",
+      os: "iPadOS · Safari",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 49 },
+        { name: "BS6 & DPF System", progress: 17 },
+        { name: "Car AC Repair", progress: 6 },
+        { name: "Automobile Electrical", progress: 22 }
+      ]
+    },
+    {
+      id: "GM-1032",
+      name: "Neha Kumari",
+      phone: "9556677880",
+      type: "student",
+      city: "Ranchi",
+      firstIp: "117.194.20.18",
+      lastIp: "117.194.20.22",
+      joined: "2026-02-26",
+      lastLogin: "2026-04-15 11:42",
+      status: "active",
+      certificate: "pending",
+      referral: "NONE",
+      experience: "beginner",
+      expertise: ["electrical"],
+      workshop: "Student",
+      age: 19,
+      device: "Moto G84",
+      os: "Android 14 · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 32 },
+        { name: "BS6 & DPF System", progress: 14 },
+        { name: "Car AC Repair", progress: 0 },
+        { name: "Automobile Electrical", progress: 18 }
+      ]
+    },
+    {
+      id: "GM-1033",
+      name: "Sahil Khan",
+      phone: "9345678123",
+      type: "mechanic",
+      city: "Lucknow",
+      firstIp: "59.96.184.7",
+      lastIp: "59.96.184.70",
+      joined: "2025-10-13",
+      lastLogin: "2026-04-13 10:01",
+      status: "active",
+      certificate: "ready",
+      referral: "EVMASTER",
+      experience: "expert",
+      expertise: ["diagnostics", "bs6", "electrical"],
+      workshop: "Khan Diesel & EV",
+      age: 35,
+      device: "POCO X6",
+      os: "Android 15 · Chrome",
+      activeCourses: [
+        { name: "EV Repair Basics", progress: 96 },
+        { name: "BS6 & DPF System", progress: 94 },
+        { name: "Car AC Repair", progress: 82 },
+        { name: "Automobile Electrical", progress: 91 }
+      ]
+    }
+  ];
+
+  const userRows = document.getElementById("userRows");
+  const mobileList = document.getElementById("mobileList");
+  const resultSummary = document.getElementById("resultSummary");
+  const cityFilter = document.getElementById("cityFilter");
+  const searchInput = document.getElementById("searchInput");
+  const roleFilter = document.getElementById("roleFilter");
+  const courseFilter = document.getElementById("courseFilter");
+  const joinedFilter = document.getElementById("joinedFilter");
+  const experienceFilter = document.getElementById("experienceFilter");
+  const expertiseFilter = document.getElementById("expertiseFilter");
+  const exportCsvBtn = document.getElementById("exportCsvBtn");
+  const exportPdfBtn = document.getElementById("exportPdfBtn");
+
+  const drawer = document.getElementById("profileDrawer");
+  const drawerBackdrop = document.getElementById("drawerBackdrop");
+  const drawerClose = document.getElementById("drawerClose");
+  const drawerDone = document.getElementById("drawerDone");
+  const drawerAvatar = document.getElementById("drawerAvatar");
+  const drawerName = document.getElementById("drawerName");
+  const drawerPhone = document.getElementById("drawerPhone");
+  const drawerMeta = document.getElementById("drawerMeta");
+  const drawerReferral = document.getElementById("drawerReferral");
+  const drawerSystem = document.getElementById("drawerSystem");
+  const drawerCourses = document.getElementById("drawerCourses");
+  const drawerRoleDetails = document.getElementById("drawerRoleDetails");
+  const drawerEdit = document.getElementById("drawerEdit");
+  const drawerReset = document.getElementById("drawerReset");
+  const drawerBlock = document.getElementById("drawerBlock");
+  const deleteModal = document.getElementById("deleteModal");
+  const deleteBackdrop = document.getElementById("deleteBackdrop");
+  const deleteInput = document.getElementById("deleteInput");
+  const deleteCancel = document.getElementById("deleteCancel");
+  const deleteConfirm = document.getElementById("deleteConfirm");
+  const deleteCopy = document.getElementById("deleteCopy");
+
+  let pendingDeleteUserId = null;
+
+  const roleMeta = {
+    mechanic: { label: "Mechanic", className: "mechanic", icon: "🛠️" },
+    owner: { label: "Owner", className: "owner", icon: "🏠" },
+    student: { label: "Student", className: "student", icon: "🎓" }
+  };
+
+  const formatDate = new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+
+  const formatDateTime = new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  function initCities(){
+    const cities = [...new Set(users.map((user) => user.city))].sort((a, b) => a.localeCompare(b));
+    cityFilter.innerHTML = `<option value="all">All Cities</option>${cities.map((city) => `<option value="${city}">${city}</option>`).join("")}`;
+  }
+
+  function averageProgress(user){
+    const total = user.activeCourses.reduce((sum, course) => sum + course.progress, 0);
+    return total / user.activeCourses.length;
+  }
+
+  function completedCourses(user){
+    return user.activeCourses.filter((course) => course.progress >= 80).length;
+  }
+
+  function isWithinJoinedRange(user, days){
+    if (days === "all") return true;
+    const joinedAt = new Date(user.joined);
+    const current = new Date("2026-04-21T12:00:00");
+    const diff = (current - joinedAt) / (1000 * 60 * 60 * 24);
+    return diff <= Number(days);
+  }
+
+  function matchesCourseFilter(user, filter){
+    const avg = averageProgress(user);
+    const done = completedCourses(user);
+
+    if (filter === "completed") return done >= 2;
+    if (filter === "partial") return avg >= 20 && done < 2;
+    if (filter === "new") return avg < 20;
+    return true;
+  }
+
+  function getFilteredUsers(){
+    const query = searchInput.value.trim().toLowerCase();
+    return users.filter((user) => {
+      const matchesQuery = !query || [user.name, user.phone, user.city].some((field) => field.toLowerCase().includes(query));
+      const matchesRole = roleFilter.value === "all" || user.type === roleFilter.value;
+      const matchesCity = cityFilter.value === "all" || user.city === cityFilter.value;
+      const matchesExperience = experienceFilter.value === "all" || user.experience === experienceFilter.value;
+      const matchesExpertise = expertiseFilter.value === "all" || user.expertise.includes(expertiseFilter.value);
+      const matchesJoined = isWithinJoinedRange(user, joinedFilter.value);
+      const matchesCourse = matchesCourseFilter(user, courseFilter.value);
+
+      return matchesQuery && matchesRole && matchesCity && matchesExperience && matchesExpertise && matchesJoined && matchesCourse;
+    });
+  }
+
+  function formatJoined(dateString){
+    return formatDate.format(new Date(dateString));
+  }
+
+  function formatLastLogin(value){
+    return formatDateTime.format(new Date(value.replace(" ", "T")));
+  }
+
+  function progressMarkup(user){
+    return `
+      <div class="progress-stack">
+        ${user.activeCourses.map((course) => `
+          <div class="progress-mini">
+            <div>
+              <div class="progress-track">
+                <span class="progress-fill" style="width:${course.progress}%;"></span>
+              </div>
+              <span>${course.name}</span>
+            </div>
+            <span>${course.progress}%</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderRows(list){
+    userRows.innerHTML = list.map((user) => {
+      const meta = roleMeta[user.type];
+      return `
+        <tr>
+          <td class="check-cell"><input class="checkbox" type="checkbox" aria-label="Select ${user.name}"></td>
+          <td>${user.id}</td>
+          <td>
+            <div class="user-name">
+              <strong>${user.name}</strong>
+              <span>${user.phone}</span>
+            </div>
+          </td>
+          <td>${user.phone}</td>
+          <td><span class="role-pill ${meta.className}">${meta.label}</span></td>
+          <td>${user.city}</td>
+          <td>
+            <div class="user-name">
+              <strong>${user.firstIp}</strong>
+              <span>Last: ${user.lastIp}</span>
+            </div>
+          </td>
+          <td>${progressMarkup(user)}</td>
+          <td><span class="badge ${user.certificate}">${user.certificate === "ready" ? "Issued" : "Pending"}</span></td>
+          <td>${user.referral}</td>
+          <td>
+            <div class="user-name">
+              <strong>${formatLastLogin(user.lastLogin)}</strong>
+              <span>Joined ${formatJoined(user.joined)}</span>
+            </div>
+          </td>
+          <td><span class="status-pill ${user.status}">${user.status === "active" ? "Active" : "Blocked"}</span></td>
+          <td>
+            <div class="actions">
+              <button class="action-link view" type="button" data-action="view" data-id="${user.id}">View</button>
+              <button class="action-link edit" type="button" data-action="edit" data-id="${user.id}">Edit</button>
+              <button class="action-link block" type="button" data-action="block" data-id="${user.id}">${user.status === "active" ? "Block" : "Unblock"}</button>
+              <button class="action-link delete" type="button" data-action="delete" data-id="${user.id}">Delete</button>
+              <button class="action-link reset" type="button" data-action="reset" data-id="${user.id}">Reset</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function renderMobileCards(list){
+    mobileList.innerHTML = list.map((user) => {
+      const meta = roleMeta[user.type];
+      const avg = Math.round(averageProgress(user));
+      return `
+        <article class="user-card">
+          <div class="card-head">
+            <div>
+              <strong style="font-size:18px;">${user.name}</strong>
+              <p class="muted" style="margin:6px 0 0;">${user.id} · ${user.phone}</p>
+            </div>
+            <span class="status-pill ${user.status}">${user.status === "active" ? "Active" : "Blocked"}</span>
+          </div>
+
+          <div class="card-meta">
+            <span class="role-pill ${meta.className}">${meta.label}</span>
+            <span class="badge ${user.certificate}">${user.certificate === "ready" ? "Issued" : "Pending"}</span>
+          </div>
+
+          <div class="card-grid">
+            <div><strong>City</strong>${user.city}</div>
+            <div><strong>Last Login</strong>${formatLastLogin(user.lastLogin)}</div>
+            <div><strong>Referral</strong>${user.referral}</div>
+            <div><strong>Avg Progress</strong>${avg}%</div>
+          </div>
+
+          ${progressMarkup(user)}
+
+          <div class="card-actions">
+            <button class="btn primary" type="button" data-action="view" data-id="${user.id}">View Full Profile</button>
+            <button class="btn dark" type="button" data-action="edit" data-id="${user.id}">Edit User</button>
+            <button class="btn warn" type="button" data-action="block" data-id="${user.id}">${user.status === "active" ? "Block User" : "Unblock User"}</button>
+            <button class="btn ghost" type="button" data-action="reset" data-id="${user.id}">Reset Progress</button>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function updateSummary(list){
+    resultSummary.textContent = `Showing ${list.length} users · ${list.filter((user) => user.status === "active").length} active · ${list.filter((user) => user.certificate === "ready").length} certificates ready`;
+  }
+
+  function renderAll(){
+    const filtered = getFilteredUsers();
+    renderRows(filtered);
+    renderMobileCards(filtered);
+    updateSummary(filtered);
+  }
+
+  function getUserById(id){
+    return users.find((user) => user.id === id);
+  }
+
+  function openDrawer(id){
+    const user = getUserById(id);
+    if (!user) return;
+
+    const meta = roleMeta[user.type];
+    drawerAvatar.textContent = meta.icon;
+    drawerName.textContent = user.name;
+    drawerPhone.textContent = user.phone;
+    drawerMeta.innerHTML = `
+      <span class="role-pill ${meta.className}">${meta.label}</span>
+      <span class="status-pill ${user.status}">${user.status === "active" ? "Active" : "Blocked"}</span>
+      <span class="badge ${user.certificate}">${user.city}</span>
+    `;
+    drawerReferral.textContent = `Referral Code: ${user.referral}`;
+
+    drawerSystem.innerHTML = `
+      <div class="info-card"><strong>First Login IP</strong>${user.firstIp}</div>
+      <div class="info-card"><strong>Last Login IP</strong>${user.lastIp}</div>
+      <div class="info-card"><strong>Last Login</strong>${formatLastLogin(user.lastLogin)}</div>
+      <div class="info-card"><strong>Device / Browser</strong>${user.device}<br><span class="muted">${user.os}</span></div>
+    `;
+
+    drawerCourses.innerHTML = user.activeCourses.map((course) => `
+      <div class="course-item">
+        <div class="row">
+          <strong>${course.name}</strong>
+          <span class="muted">${course.progress}%</span>
+        </div>
+        <div class="progress-track">
+          <span class="progress-fill" style="width:${course.progress}%;"></span>
+        </div>
+      </div>
+    `).join("");
+
+    drawerRoleDetails.innerHTML = `
+      <div class="info-card"><strong>Experience Level</strong>${user.experience}</div>
+      <div class="info-card"><strong>Expertise</strong>${user.expertise.join(", ")}</div>
+      <div class="info-card"><strong>Workshop / Role</strong>${user.workshop}</div>
+      <div class="info-card"><strong>Age</strong>${user.age}</div>
+    `;
+
+    drawerEdit.onclick = () => window.alert(`Edit flow placeholder for ${user.name}`);
+    drawerReset.onclick = () => window.alert(`Reset progress placeholder for ${user.name}`);
+    drawerBlock.onclick = () => window.alert(`${user.status === "active" ? "Block" : "Unblock"} placeholder for ${user.name}`);
+
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDrawer(){
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  function openDeleteModal(id){
+    const user = getUserById(id);
+    if (!user) return;
+    pendingDeleteUserId = id;
+    deleteCopy.textContent = `This will remove ${user.name} (${user.id}) from the current admin view. Type DELETE in caps to continue.`;
+    deleteInput.value = "";
+    deleteConfirm.disabled = true;
+    deleteModal.classList.add("open");
+    deleteModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    deleteInput.focus();
+  }
+
+  function closeDeleteModal(){
+    pendingDeleteUserId = null;
+    deleteInput.value = "";
+    deleteConfirm.disabled = true;
+    deleteModal.classList.remove("open");
+    deleteModal.setAttribute("aria-hidden", "true");
+    if (!drawer.classList.contains("open")) document.body.style.overflow = "";
+  }
+
+  function confirmDelete(){
+    if (deleteInput.value !== "DELETE" || !pendingDeleteUserId) return;
+    const index = users.findIndex((user) => user.id === pendingDeleteUserId);
+    if (index === -1) return;
+    const [deletedUser] = users.splice(index, 1);
+    closeDeleteModal();
+    closeDrawer();
+    initCities();
+    renderAll();
+    window.alert(`${deletedUser.name} has been deleted from the admin list.`);
+  }
+
+  function exportCsv(){
+    const filtered = getFilteredUsers();
+    const rows = [
+      ["User ID", "Name", "Phone", "Type", "City", "First IP", "Last IP", "Referral", "Last Login", "Status"],
+      ...filtered.map((user) => [user.id, user.name, user.phone, user.type, user.city, user.firstIp, user.lastIp, user.referral, user.lastLogin, user.status])
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "gomico-admin-users.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleAction(event){
+    const trigger = event.target.closest("[data-action]");
+    if (!trigger) return;
+
+    const action = trigger.dataset.action;
+    const id = trigger.dataset.id;
+    const user = getUserById(id);
+    if (!user) return;
+
+    if (action === "view") openDrawer(id);
+    if (action === "edit") window.alert(`Edit flow placeholder for ${user.name}`);
+    if (action === "block") window.alert(`${user.status === "active" ? "Block" : "Unblock"} placeholder for ${user.name}`);
+    if (action === "delete") openDeleteModal(id);
+    if (action === "reset") window.alert(`Reset progress placeholder for ${user.name}`);
+  }
+
+  [searchInput, roleFilter, cityFilter, courseFilter, joinedFilter, experienceFilter, expertiseFilter].forEach((node) => {
+    node.addEventListener("input", renderAll);
+    node.addEventListener("change", renderAll);
+  });
+
+  document.addEventListener("click", handleAction);
+  drawerBackdrop.addEventListener("click", closeDrawer);
+  drawerClose.addEventListener("click", closeDrawer);
+  drawerDone.addEventListener("click", closeDrawer);
+  deleteBackdrop.addEventListener("click", closeDeleteModal);
+  deleteCancel.addEventListener("click", closeDeleteModal);
+  deleteInput.addEventListener("input", () => {
+    deleteConfirm.disabled = deleteInput.value !== "DELETE";
+  });
+  deleteConfirm.addEventListener("click", confirmDelete);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
+    if (event.key === "Escape" && deleteModal.classList.contains("open")) closeDeleteModal();
+    if (event.key === "Enter" && deleteModal.classList.contains("open") && deleteInput.value === "DELETE") confirmDelete();
+  });
+
+  exportCsvBtn.addEventListener("click", exportCsv);
+  exportPdfBtn.addEventListener("click", () => window.print());
+
+  initCities();
+  renderAll();
+</script>
+</body>
+</html>
+
