@@ -125,6 +125,94 @@
 
   .nav-actions { display: flex; gap: 8px; }
 
+  /* ---------- HAMBURGER MENU ---------- */
+  .hamburger-btn {
+    display: none;
+    flex-direction: column; justify-content: center; gap: 5px;
+    width: 40px; height: 40px; padding: 8px;
+    background: var(--ink-4); border: 1px solid rgba(146,252,5,0.25);
+    border-radius: 10px; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .hamburger-btn span {
+    display: block; width: 100%; height: 2px;
+    background: var(--lime); border-radius: 2px;
+    transition: transform .25s ease, opacity .2s ease;
+  }
+  .hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger-btn.open span:nth-child(2) { opacity: 0; }
+  .hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Mobile drawer */
+  .mob-drawer {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 49;
+    pointer-events: none;
+  }
+  .mob-drawer-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.6);
+    opacity: 0; transition: opacity .25s ease;
+  }
+  .mob-drawer-panel {
+    position: absolute; top: 0; right: 0;
+    width: 280px; height: 100%;
+    background: #071710;
+    border-left: 1px solid rgba(146,252,5,0.2);
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    padding: 80px 24px 32px;
+    display: flex; flex-direction: column; gap: 12px;
+    overflow-y: auto;
+  }
+  .mob-drawer.open {
+    display: block;
+    pointer-events: all;
+  }
+  .mob-drawer.open .mob-drawer-overlay { opacity: 1; }
+  .mob-drawer.open .mob-drawer-panel { transform: translateX(0); }
+
+  .mob-drawer-panel .mob-menu-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+    margin-bottom: 4px; margin-top: 8px;
+  }
+  .mob-drawer-panel a.mob-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 12px;
+    color: #fff; font-size: 16px; font-weight: 500;
+    background: var(--ink-3); border: 1px solid var(--ink-5);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .mob-drawer-panel a.mob-link:hover {
+    border-color: rgba(146,252,5,0.4);
+    background: rgba(146,252,5,0.05);
+  }
+  .mob-drawer-panel a.mob-link.primary {
+    background: var(--lime); color: #06170E;
+    border-color: var(--lime); font-weight: 700;
+  }
+  .mob-drawer-panel a.mob-link.ghost-link {
+    background: var(--ink-3); color: var(--lime);
+    border-color: rgba(146,252,5,0.35);
+  }
+
+  /* Mobile India #1 pill shown below header */
+  .mob-india-pill {
+    display: none;
+    align-items: center; gap: 8px;
+    padding: 8px 14px; border-radius: 100px;
+    background: var(--ink-4); color: var(--lime);
+    font-size: 13px; font-weight: 500;
+    width: fit-content;
+    margin: 12px auto 0;
+  }
+  .mob-india-pill .spark { width: 18px; height: 18px; border-radius: 50%;
+    background: radial-gradient(circle, #FFD23A 0 30%, #F7971E 50%, transparent 70%);
+    display: grid; place-items: center; color: #fff; font-size: 10px; flex-shrink: 0; }
+
+
   /* ============================================================
      HERO
      ============================================================ */
@@ -634,30 +722,38 @@
   }
 
   @media (max-width: 760px) {
-    header.nav { height: auto; }
+    header.nav { height: 60px; }
 
-    header.nav .inner,
+    header.nav .inner {
+      flex-direction: row;
+      align-items: center;
+      padding: 0 16px;
+      height: 100%;
+      gap: 0;
+    }
+
+    /* Hide pill and actions in nav on mobile */
+    header.nav .nav-pill,
+    header.nav .nav-actions {
+      display: none !important;
+    }
+
+    /* Show hamburger */
+    .hamburger-btn {
+      display: flex;
+      margin-left: auto;
+    }
+
+    /* Show India pill below header */
+    .mob-india-pill {
+      display: inline-flex;
+    }
+
     .hero-cta,
     .final-chips,
     .footer-legal {
       flex-direction: column;
       align-items: flex-start;
-    }
-
-    header.nav .inner {
-      padding: 14px 16px;
-      min-height: 0;
-      gap: 14px;
-    }
-
-    .nav-pill,
-    .nav-actions {
-      width: 100%;
-    }
-
-    .nav-actions .btn {
-      flex: 1;
-      justify-content: center;
     }
 
     .hero {
@@ -1035,11 +1131,38 @@
       India's #1 Growing Mechanic Community
     </div>
     <div class="nav-actions">
-      <a class="btn sm ghost" href="events.html">Events 2026</a>
+      <a class="btn sm ghost" href="/events.html">Events 2026</a>
       <a class="btn sm" href="onboarding.html">Login</a>
     </div>
+    <!-- Hamburger — visible only on mobile -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- Mobile Drawer -->
+<div class="mob-drawer" id="mobDrawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <div class="mob-drawer-overlay" id="drawerOverlay"></div>
+  <nav class="mob-drawer-panel">
+    <p class="mob-menu-label">Navigation</p>
+    <a class="mob-link ghost-link" href="/events.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 2v4m8-4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Events 2026
+    </a>
+    <p class="mob-menu-label" style="margin-top:16px">Account</p>
+    <a class="mob-link primary" href="onboarding.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
+      Login / Register Free
+    </a>
+  </nav>
+</div>
+
+<!-- Mobile India #1 pill — visible only on mobile (below header) -->
+<div class="mob-india-pill" aria-hidden="true">
+  <span class="spark" style="width:18px;height:18px;border-radius:50%;background:radial-gradient(circle, #FFD23A 0 30%, #F7971E 50%, transparent 70%);display:grid;place-items:center;color:#fff;font-size:10px;flex-shrink:0;">★</span>
+  India's #1 Growing Mechanic Community
+</div>
 
 <!-- ============================ HERO ============================ -->
 <section class="hero" style="position:relative;overflow:hidden">
@@ -1432,15 +1555,14 @@
     <div class="section-title-block">
       <span class="eyebrow"><span class="dot"></span> JOURNEY</span>
       <h2 class="h-section" style="margin-top:16px">कैसे काम करता है?</h2>
-      <p class="sub">5 आसान steps में अपनी skill को upgrade करें</p>
+      <p class="sub">4 आसान steps में अपनी skill को upgrade करें</p>
     </div>
 
     <div class="steps">
       <div class="step"><div class="circle">1</div><h5>Register करें</h5></div>
       <div class="step"><div class="circle">2</div><h5>Course चुनें</h5></div>
       <div class="step"><div class="circle">3</div><h5>Course शुरू करें</h5></div>
-      <div class="step"><div class="circle">4</div><h5>Modules complete करें</h5></div>
-      <div class="step last"><div class="circle">5</div><h5>Certificate download करें</h5></div>
+      <div class="step last"><div class="circle">4</div><h5>Modules complete करें</h5></div>
     </div>
 
     <div class="how-tagline">
@@ -1449,31 +1571,6 @@
   </div>
 </section>
 
-<!-- ============================ CERTIFICATE ============================ -->
-<section class="cert">
-  <div class="cert-decor"></div>
-  <div class="cert-wrap">
-    <div class="cert-image">
-      <img src="assets/images/certificate.png" alt="GoMico certificate sample">
-    </div>
-    <div class="cert-body">
-      <h2>Certificate का फायदा</h2>
-      <p class="s">Course complete करने के बाद आपको मिलता है GoMico Certificate</p>
-      <ul class="cert-bullets">
-        <li><span class="tick"><svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M16 6 8 14l-4-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Customer trust बढ़ता है</li>
-        <li><span class="tick"><svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M16 6 8 14l-4-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>आपका confidence बढ़ता है</li>
-        <li><span class="tick"><svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M16 6 8 14l-4-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>आपकी value बढ़ती है</li>
-      </ul>
-      <a class="btn white" href="onboarding.html">
-        Get My Certificate Now
-        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-      <div class="cert-note">
-        नोट: कोर्स पूरा होने पर सर्टिफिकेट की Hard Copy आपके घर भेजी जाएगी
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ============================ COMMUNITY ============================ -->
 <section class="community">
@@ -2057,6 +2154,47 @@
   });
   try { window.parent.postMessage({type: '__edit_mode_available'}, '*'); } catch(e){}
 })();
+
+// ============================================================
+// HAMBURGER MENU (mobile)
+// ============================================================
+(function() {
+  const btn     = document.getElementById('hamburgerBtn');
+  const drawer  = document.getElementById('mobDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+
+  if (!btn || !drawer) return;
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    btn.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  btn.addEventListener('click', () => {
+    drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+  });
+
+  overlay.addEventListener('click', closeDrawer);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+  });
+
+  // Close drawer when a link inside is clicked
+  drawer.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', closeDrawer);
+  });
+})();
 </script>
+
 </body>
 </html>

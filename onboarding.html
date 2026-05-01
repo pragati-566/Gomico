@@ -233,6 +233,23 @@
   .btn:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(146,252,5,.12)}
   .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 
+  /* Expertise validation styles */
+  .chips.error-glow{
+    box-shadow:0 0 0 2px #ff4d4f;
+    border-radius:8px;
+    padding:8px;
+    background:rgba(255,77,79,.05);
+    margin:4px -8px 0;
+  }
+  .expertise-error-msg{
+    color:#ff4d4f;
+    font-size:13px;
+    font-weight:600;
+    margin-top:8px;
+    display:none;
+  }
+  .expertise-error-msg.show{display:block}
+
   .welcome-wrap{display:flex;flex-direction:column;gap:40px;align-items:center}
   .welcome-head{display:flex;flex-direction:column;gap:24px;align-items:center;width:100%}
   .welcome-icon{width:64px;height:64px;display:grid;place-items:center}
@@ -363,6 +380,7 @@
           </div>
         </div>
 
+        <div id="mechanic-error-1" style="color: var(--red); font-size: 14px; margin-top: 16px; text-align: center; font-weight: 500;"></div>
         <button class="btn" id="continue-mechanic-1">आगे बढ़ें</button>
       </section>
 
@@ -390,7 +408,7 @@
           </select>
         </div>
 
-        <div class="group">
+        <div class="group" id="expertise-group">
           <div class="label">Expertise</div>
           <div class="chips" id="expertise-set">
             <button type="button" class="chip" data-chip="Electrical &amp; Wiring">Electrical &amp; Wiring</button>
@@ -400,6 +418,7 @@
             <button type="button" class="chip" data-chip="Windshield">Windshield</button>
             <button type="button" class="chip" data-chip="Other">Other</button>
           </div>
+          <p id="expertise-error-msg" class="expertise-error-msg">Please select at least one expertise</p>
         </div>
 
         <div class="group"><input class="input" id="referral-code" type="text" placeholder="Referral Code (Optional)" /></div>
@@ -427,6 +446,7 @@
           <input class="input" id="owner-shop" type="text" placeholder="जैसे: भारत मोटर्स" />
         </div>
 
+        <div id="owner-error" style="color: var(--red); font-size: 14px; margin-top: 16px; text-align: center; font-weight: 500;"></div>
         <button class="btn" id="complete-owner">Complete</button>
       </section>
 
@@ -447,6 +467,7 @@
         <div class="group"><input class="input" id="student-city" type="text" placeholder="City" /></div>
         <div class="group"><input class="input" id="student-age" type="text" placeholder="अपनी उम्र डालें" /></div>
 
+        <div id="student-error" style="color: var(--red); font-size: 14px; margin-top: 16px; text-align: center; font-weight: 500;"></div>
         <button class="btn" id="complete-student">Complete</button>
       </section>
 
@@ -516,7 +537,7 @@
   let resendTimer = null;
   let selectedRole = "mechanic";
   let selectedWorkType = "4 Wheeler";
-  const expertise = new Set(["Electrical & Wiring"]);
+  const expertise = new Set();
 
   const BACKGROUNDS = {
     phone: getComputedStyle(document.documentElement).getPropertyValue("--phone-bg"),
@@ -617,29 +638,12 @@
     }, 1000);
   }
 
-  function saveProfile(){
-    const payload = {
-      role: selectedRole,
-      phone: phoneInput.value.replace(/\D/g, ""),
-      name: selectedRole === "mechanic" ? (mechanicNameEl.value.trim() || "Aman Singh") : selectedRole === "owner" ? (ownerNameEl.value.trim() || "Owner User") : (studentNameEl.value.trim() || "Student User"),
-      city: selectedRole === "mechanic" ? (mechanicCityEl.value.trim() || "Bhopal") : selectedRole === "owner" ? (ownerCityEl.value.trim() || "Bhopal") : (studentCityEl.value.trim() || "Bhopal"),
-      worksOn: selectedRole === "mechanic" ? selectedWorkType : "",
-      experience: selectedRole === "mechanic" ? experienceEl.value : "",
-      expertise: selectedRole === "mechanic" ? [...expertise] : [],
-      referral: selectedRole === "mechanic" ? referralEl.value.trim() : "",
-      shopName: selectedRole === "owner" ? ownerShopEl.value.trim() : "",
-      age: selectedRole === "student" ? studentAgeEl.value.trim() : ""
-    };
-    localStorage.setItem("gomicoProfile", JSON.stringify(payload));
-  }
-
   function resetFlow(){
     clearInterval(resendTimer);
     current = "phone";
     selectedRole = "mechanic";
     selectedWorkType = "4 Wheeler";
     expertise.clear();
-    expertise.add("Electrical & Wiring");
     phoneInput.value = "";
     otpTarget.textContent = "+91 000 000 0000";
     document.querySelectorAll(".otp-cell").forEach((cell) => { cell.value = ""; });
@@ -671,10 +675,34 @@
     if (event.key === "Enter" && !sendOtpBtn.disabled) sendOtpBtn.click();
   });
 
-  sendOtpBtn.addEventListener("click", () => {
-    otpTarget.textContent = `+91 ${phoneInput.value}`;
-    showStep("otp");
-    startResend();
+  sendOtpBtn.addEventListener("click", async () => {
+    const phone = phoneInput.value.replace(/\D/g, "");
+    try {
+      sendOtpBtn.disabled = true;
+      sendOtpBtn.textContent = "Sending...";
+
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        otpTarget.textContent = `+91 ${phoneInput.value}`;
+        showStep("otp");
+        startResend();
+      } else {
+        alert(data.error || 'Failed to send OTP');
+      }
+    } catch (error) {
+      console.error('Send OTP error:', error);
+      alert('Failed to send OTP. Please try again.');
+    } finally {
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = "OTP प्राप्त करें";
+    }
   });
 
   [...document.querySelectorAll(".otp-cell")].forEach((cell, index, cells) => {
@@ -698,13 +726,68 @@
     });
   });
 
-  verifyOtpBtn.addEventListener("click", () => {
-    showStep("role");
+  verifyOtpBtn.addEventListener("click", async () => {
+    const phone = phoneInput.value.replace(/\D/g, "");
+    const otp = [...document.querySelectorAll(".otp-cell")].map(cell => cell.value).join("");
+
+    try {
+      verifyOtpBtn.disabled = true;
+      verifyOtpBtn.textContent = "Verifying...";
+
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.token) {
+          localStorage.setItem('gomicoToken', data.token);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+        }
+
+        if (data.isNewUser) {
+          showStep("role");
+        } else {
+          // Existing user - redirect to dashboard
+          window.location.href = "dashboard.html";
+        }
+      } else {
+        alert(data.error || 'Invalid OTP');
+      }
+    } catch (error) {
+      console.error('Verify OTP error:', error);
+      alert('Failed to verify OTP. Please try again.');
+    } finally {
+      verifyOtpBtn.disabled = false;
+      verifyOtpBtn.textContent = "Verify करें";
+    }
   });
 
-  resendLink.addEventListener("click", (event) => {
+  resendLink.addEventListener("click", async (event) => {
     event.preventDefault();
-    startResend();
+    const phone = phoneInput.value.replace(/\D/g, "");
+
+    try {
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        startResend();
+      } else {
+        alert(data.error || 'Failed to resend OTP');
+      }
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      alert('Failed to resend OTP. Please try again.');
+    }
   });
 
   document.querySelectorAll(".role-btn").forEach((button) => {
@@ -727,6 +810,11 @@
       if (expertise.has(value)) expertise.delete(value);
       else expertise.add(value);
       syncChips();
+      // Real-time: clear error as soon as user picks any expertise
+      if (expertise.size > 0) {
+        document.getElementById("expertise-set").classList.remove("error-glow");
+        document.getElementById("expertise-error-msg").classList.remove("show");
+      }
     });
   });
 
@@ -737,22 +825,149 @@
   });
 
   mechanicStep1Btn.addEventListener("click", () => {
+    const fullName = mechanicNameEl.value.trim();
+    const city = mechanicCityEl.value.trim();
+    if (!fullName || !city) {
+      document.getElementById("mechanic-error-1").textContent = "Please fill out your Full Name and City to continue.";
+      return;
+    }
+    document.getElementById("mechanic-error-1").textContent = "";
     showStep("mechanic-2");
   });
 
-  document.getElementById("complete-mechanic").addEventListener("click", () => {
-    saveProfile();
-    showStep("mechanic-welcome");
+  document.getElementById("complete-mechanic").addEventListener("click", async () => {
+    // ── Expertise validation (must select at least one) ──
+    if (expertise.size === 0) {
+      document.getElementById("expertise-set").classList.add("error-glow");
+      document.getElementById("expertise-error-msg").classList.add("show");
+      document.getElementById("expertise-set").scrollIntoView({ behavior: "smooth", block: "center" });
+      return; // Hard stop — do NOT proceed
+    }
+    document.getElementById("expertise-set").classList.remove("error-glow");
+    document.getElementById("expertise-error-msg").classList.remove("show");
+
+    const fullName = mechanicNameEl.value.trim();
+    const city = mechanicCityEl.value.trim();
+
+    const phone = phoneInput.value.replace(/\D/g, "");
+    const userData = {
+      phone,
+      userType: 'mechanic',
+      fullName: fullName,
+      city: city,
+      worksOn: selectedWorkType.toLowerCase().replace(' ', '_'),
+      experience: experienceEl.value,
+      expertise: [...expertise],
+      referralCode: referralEl.value.trim() || undefined
+    };
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('gomicoToken', data.token);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        window.location.href = "dashboard.html";
+      } else {
+        alert(data.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Registration failed. Please try again.');
+    }
   });
 
-  document.getElementById("complete-owner").addEventListener("click", () => {
-    saveProfile();
-    showStep("owner-welcome");
+  document.getElementById("complete-owner").addEventListener("click", async () => {
+    const fullName = ownerNameEl.value.trim();
+    const city = ownerCityEl.value.trim();
+    const shopName = ownerShopEl.value.trim();
+    const errorEl = document.getElementById("owner-error");
+
+    if (!fullName || !city || !shopName) {
+      errorEl.textContent = "Please fill out your Full Name, City, and Workshop Name to continue.";
+      return;
+    }
+    errorEl.textContent = "";
+
+    const phone = phoneInput.value.replace(/\D/g, "");
+    const userData = {
+      phone,
+      userType: 'workshop_owner',
+      fullName: fullName,
+      city: city,
+      workshopName: shopName,
+      referralCode: '' // Can add referral for owners if needed
+    };
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('gomicoToken', data.token);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        window.location.href = "dashboard.html";
+      } else {
+        alert(data.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Registration failed. Please try again.');
+    }
   });
 
-  document.getElementById("complete-student").addEventListener("click", () => {
-    saveProfile();
-    showStep("student-welcome");
+  document.getElementById("complete-student").addEventListener("click", async () => {
+    const fullName = studentNameEl.value.trim();
+    const city = studentCityEl.value.trim();
+    const errorEl = document.getElementById("student-error");
+
+    if (!fullName || !city) {
+      errorEl.textContent = "Please fill out your Full Name and City to continue.";
+      return;
+    }
+    errorEl.textContent = "";
+
+    const phone = phoneInput.value.replace(/\D/g, "");
+    const userData = {
+      phone,
+      userType: 'student',
+      fullName: fullName,
+      city: city,
+      age: parseInt(studentAgeEl.value.trim()) || undefined,
+      referralCode: '' // Can add referral for students if needed
+    };
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('gomicoToken', data.token);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        window.location.href = "dashboard.html";
+      } else {
+        alert(data.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Registration failed. Please try again.');
+    }
   });
 
   document.getElementById("start-mechanic").addEventListener("click", () => {

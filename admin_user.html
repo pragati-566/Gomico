@@ -755,7 +755,7 @@
   <div class="page">
     <header class="topbar">
       <div class="container topbar-inner">
-        <a class="brand" href="index.html">
+        <a class="brand" href="/">
           <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
         </a>
 
@@ -764,9 +764,9 @@
         </div>
 
         <div class="topbar-actions">
-          <a class="btn primary" href="index.html">Close Admin</a>
-          <a class="btn dark" href="admin-events.html">Admin Events</a>
-          <a class="btn ghost" href="login.html">Logout</a>
+          <a class="btn primary" href="/">Close Admin</a>
+          <a class="btn dark" href="/admin/events">Admin Events</a>
+          <button class="btn ghost" data-admin-logout>Logout</button>
         </div>
       </div>
     </header>
@@ -779,9 +779,9 @@
         </div>
 
         <nav class="nav-tabs" aria-label="Admin sections">
-          <a class="nav-tab" href="admin-dashboard.html">Overview</a>
-          <a class="nav-tab active" href="admin-users.html">User Management</a>
-          <a class="nav-tab" href="admin-events.html">Events</a>
+          <a class="nav-tab" href="/admin">Overview</a>
+          <a class="nav-tab active" href="/admin/users">User Management</a>
+          <a class="nav-tab" href="/admin/events">Events</a>
         </nav>
       </section>
 
@@ -927,271 +927,140 @@
         </div>
       </div>
     </section>
+
+    <section class="confirm-modal" id="exportModal" aria-hidden="true">
+      <div class="confirm-backdrop" id="exportBackdrop"></div>
+      <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+        <h3 id="exportTitle">Export User Data</h3>
+        <p>Choose export format:</p>
+        <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
+          <button class="btn primary" id="exportCsvOption" type="button">Export as CSV</button>
+          <button class="btn accent" id="exportPdfOption" type="button">Export as PDF</button>
+        </div>
+        <p style="margin:16px 0 0;font-size:13px;color:var(--muted)">Export requires authorization.</p>
+        <div style="margin-top:12px">
+          <label style="display:block;margin-bottom:6px;font-size:13px;color:var(--muted)">Enter password to confirm:</label>
+          <input class="control" id="exportPassword" type="password" placeholder="Enter password" autocomplete="off" style="width:100%;">
+          <p id="exportErrorMsg" style="color:#ff4d4f;font-size:13px;font-weight:600;margin:8px 0 0;display:none;"></p>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn ghost" id="exportCancel" type="button">Cancel</button>
+          <button class="btn primary" id="exportConfirm" type="button" disabled>Confirm Export</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="drawer" id="editDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" id="editBackdrop"></div>
+      <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+        <div class="drawer-head">
+          <div>
+            <p class="muted" style="margin:0 0 6px;">Edit User</p>
+            <h2 class="drawer-title" id="editTitle">Profile Editor</h2>
+          </div>
+          <button class="close-btn" id="editClose" type="button" aria-label="Close edit drawer">&times;</button>
+        </div>
+
+        <div class="profile-top">
+          <div class="avatar" id="editAvatar">👤</div>
+          <div>
+            <h3 class="drawer-name" id="editName">User Name</h3>
+            <p class="drawer-phone" id="editPhone">0000000000</p>
+          </div>
+        </div>
+
+        <div class="drawer-section">
+          <h3>Basic Information</h3>
+          <div style="display:grid;gap:12px">
+            <div>
+              <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--muted)">Full Name</label>
+              <input class="control" id="editFullName" type="text" placeholder="Full name" style="width:100%;">
+            </div>
+            <div>
+              <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--muted)">City</label>
+              <input class="control" id="editCity" type="text" placeholder="City" style="width:100%;">
+            </div>
+            <div>
+              <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--muted)">Status</label>
+              <select class="control" id="editStatus" style="width:100%;">
+                <option value="active">Active</option>
+                <option value="blocked">Blocked</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-section" id="editMechanicSection" style="display:none">
+          <h3>Mechanic Details</h3>
+          <div style="display:grid;gap:12px">
+            <div>
+              <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--muted)">Experience</label>
+              <select class="control" id="editExperience" style="width:100%;">
+                <option value="beginner">Beginner</option>
+                <option value="mid">Mid Level</option>
+                <option value="expert">Expert</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-section" id="editOwnerSection" style="display:none">
+          <h3>Workshop Details</h3>
+          <div style="display:grid;gap:12px">
+            <div>
+              <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--muted)">Workshop Name</label>
+              <input class="control" id="editWorkshop" type="text" placeholder="Workshop name" style="width:100%;">
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-actions">
+          <button class="btn primary" id="editSave" type="button">Save Changes</button>
+          <button class="btn ghost" id="editDone" type="button">Cancel</button>
+        </div>
+      </aside>
+    </section>
   </div>
 
+<script src="/admin_auth.js"></script>
 <script>
-  const users = [
-    {
-      id: "GM-1024",
-      name: "Amit Singh",
-      phone: "9812345678",
-      type: "owner",
-      city: "Mumbai",
-      firstIp: "49.36.18.204",
-      lastIp: "49.36.18.204",
-      joined: "2026-03-11",
-      lastLogin: "2026-04-21 09:42",
-      status: "active",
-      certificate: "ready",
-      referral: "WORKSHOP10",
-      experience: "expert",
-      expertise: ["diagnostics", "ev"],
-      workshop: "Amit Auto EV Hub",
-      age: 36,
-      device: "iPhone 14",
-      os: "iOS 18 · Safari",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 100 },
-        { name: "BS6 & DPF System", progress: 92 },
-        { name: "Car AC Repair", progress: 76 },
-        { name: "Automobile Electrical", progress: 81 }
-      ]
-    },
-    {
-      id: "GM-1025",
-      name: "Vikram Patel",
-      phone: "7890123456",
-      type: "mechanic",
-      city: "Ahmedabad",
-      firstIp: "27.56.221.100",
-      lastIp: "27.56.221.194",
-      joined: "2026-02-14",
-      lastLogin: "2026-04-20 22:10",
-      status: "active",
-      certificate: "ready",
-      referral: "OWNERREF22",
-      experience: "expert",
-      expertise: ["electrical", "bs6", "ev"],
-      workshop: "Field Mechanic",
-      age: 31,
-      device: "Redmi Note 13",
-      os: "Android 15 · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 94 },
-        { name: "BS6 & DPF System", progress: 88 },
-        { name: "Car AC Repair", progress: 51 },
-        { name: "Automobile Electrical", progress: 67 }
-      ]
-    },
-    {
-      id: "GM-1026",
-      name: "Manoj Tiwari",
-      phone: "9988776655",
-      type: "mechanic",
-      city: "Patna",
-      firstIp: "103.85.114.21",
-      lastIp: "103.85.114.88",
-      joined: "2026-01-30",
-      lastLogin: "2026-04-17 18:26",
-      status: "blocked",
-      certificate: "pending",
-      referral: "NONE",
-      experience: "mid",
-      expertise: ["ac", "diagnostics"],
-      workshop: "Independent Garage",
-      age: 28,
-      device: "Samsung A55",
-      os: "Android 15 · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 42 },
-        { name: "BS6 & DPF System", progress: 39 },
-        { name: "Car AC Repair", progress: 74 },
-        { name: "Automobile Electrical", progress: 33 }
-      ]
-    },
-    {
-      id: "GM-1027",
-      name: "Anand Verma",
-      phone: "9123456780",
-      type: "owner",
-      city: "Indore",
-      firstIp: "106.201.88.91",
-      lastIp: "106.201.88.93",
-      joined: "2025-12-18",
-      lastLogin: "2026-04-19 07:14",
-      status: "active",
-      certificate: "ready",
-      referral: "EVLEAD44",
-      experience: "expert",
-      expertise: ["ev", "diagnostics"],
-      workshop: "Verma EV Point",
-      age: 40,
-      device: "MacBook Air",
-      os: "macOS · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 100 },
-        { name: "BS6 & DPF System", progress: 82 },
-        { name: "Car AC Repair", progress: 58 },
-        { name: "Automobile Electrical", progress: 73 }
-      ]
-    },
-    {
-      id: "GM-1028",
-      name: "David John",
-      phone: "7766554433",
-      type: "mechanic",
-      city: "Bangalore",
-      firstIp: "115.97.204.61",
-      lastIp: "115.97.204.61",
-      joined: "2026-04-02",
-      lastLogin: "2026-04-21 12:05",
-      status: "active",
-      certificate: "pending",
-      referral: "NONE",
-      experience: "mid",
-      expertise: ["electrical", "ev"],
-      workshop: "QuickFix EV",
-      age: 27,
-      device: "OnePlus 12R",
-      os: "Android 15 · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 68 },
-        { name: "BS6 & DPF System", progress: 24 },
-        { name: "Car AC Repair", progress: 12 },
-        { name: "Automobile Electrical", progress: 71 }
-      ]
-    },
-    {
-      id: "GM-1029",
-      name: "Mohammad Rafiq",
-      phone: "6655443322",
-      type: "mechanic",
-      city: "Kolkata",
-      firstIp: "157.48.119.91",
-      lastIp: "157.48.119.122",
-      joined: "2025-11-09",
-      lastLogin: "2026-04-16 15:38",
-      status: "active",
-      certificate: "pending",
-      referral: "GARAGE30",
-      experience: "mid",
-      expertise: ["bs6", "ac"],
-      workshop: "Rafiq Motors",
-      age: 33,
-      device: "Vivo V30",
-      os: "Android 15 · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 61 },
-        { name: "BS6 & DPF System", progress: 83 },
-        { name: "Car AC Repair", progress: 57 },
-        { name: "Automobile Electrical", progress: 22 }
-      ]
-    },
-    {
-      id: "GM-1030",
-      name: "Gurpreet Singh",
-      phone: "8877665544",
-      type: "owner",
-      city: "Chandigarh",
-      firstIp: "42.106.44.90",
-      lastIp: "42.106.44.142",
-      joined: "2026-03-02",
-      lastLogin: "2026-04-18 20:11",
-      status: "active",
-      certificate: "ready",
-      referral: "PARTNER11",
-      experience: "expert",
-      expertise: ["electrical", "diagnostics"],
-      workshop: "Punjab EV Clinic",
-      age: 38,
-      device: "Windows Laptop",
-      os: "Windows 11 · Edge",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 86 },
-        { name: "BS6 & DPF System", progress: 84 },
-        { name: "Car AC Repair", progress: 66 },
-        { name: "Automobile Electrical", progress: 79 }
-      ]
-    },
-    {
-      id: "GM-1031",
-      name: "Riya Sharma",
-      phone: "9001122334",
-      type: "student",
-      city: "Delhi",
-      firstIp: "223.178.82.54",
-      lastIp: "223.178.82.54",
-      joined: "2026-04-07",
-      lastLogin: "2026-04-21 08:56",
-      status: "active",
-      certificate: "pending",
-      referral: "CAMPUS01",
-      experience: "beginner",
-      expertise: ["ev"],
-      workshop: "Student",
-      age: 20,
-      device: "iPad Air",
-      os: "iPadOS · Safari",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 49 },
-        { name: "BS6 & DPF System", progress: 17 },
-        { name: "Car AC Repair", progress: 6 },
-        { name: "Automobile Electrical", progress: 22 }
-      ]
-    },
-    {
-      id: "GM-1032",
-      name: "Neha Kumari",
-      phone: "9556677880",
-      type: "student",
-      city: "Ranchi",
-      firstIp: "117.194.20.18",
-      lastIp: "117.194.20.22",
-      joined: "2026-02-26",
-      lastLogin: "2026-04-15 11:42",
-      status: "active",
-      certificate: "pending",
-      referral: "NONE",
-      experience: "beginner",
-      expertise: ["electrical"],
-      workshop: "Student",
-      age: 19,
-      device: "Moto G84",
-      os: "Android 14 · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 32 },
-        { name: "BS6 & DPF System", progress: 14 },
-        { name: "Car AC Repair", progress: 0 },
-        { name: "Automobile Electrical", progress: 18 }
-      ]
-    },
-    {
-      id: "GM-1033",
-      name: "Sahil Khan",
-      phone: "9345678123",
-      type: "mechanic",
-      city: "Lucknow",
-      firstIp: "59.96.184.7",
-      lastIp: "59.96.184.70",
-      joined: "2025-10-13",
-      lastLogin: "2026-04-13 10:01",
-      status: "active",
-      certificate: "ready",
-      referral: "EVMASTER",
-      experience: "expert",
-      expertise: ["diagnostics", "bs6", "electrical"],
-      workshop: "Khan Diesel & EV",
-      age: 35,
-      device: "POCO X6",
-      os: "Android 15 · Chrome",
-      activeCourses: [
-        { name: "EV Repair Basics", progress: 96 },
-        { name: "BS6 & DPF System", progress: 94 },
-        { name: "Car AC Repair", progress: 82 },
-        { name: "Automobile Electrical", progress: 91 }
-      ]
-    }
-  ];
+  let users = [];
+  let adminToken = null;
+
+  async function loadAdminUsers() {
+    try {
+      adminToken = await ensureAdminAuth();
+      const res = await fetch('/api/admin/users?limit=1000', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      });
+      if(res.ok) {
+        const data = await res.json();
+        users = data.users.map(u => ({
+          id: u._id,
+          name: u.fullName || "Unknown",
+          phone: u.phone,
+          type: u.userType === "workshop_owner" ? "owner" : u.userType,
+          city: u.city || "Unknown",
+          firstIp: "N/A", lastIp: "N/A",
+          joined: u.createdAt ? u.createdAt.split('T')[0] : "2026-04-21",
+          lastLogin: (u.lastLogin || u.createdAt || new Date().toISOString()).slice(0, 16).replace('T', ' '),
+          status: u.isActive ? "active" : "blocked",
+          certificate: "pending", referral: "NONE",
+          experience: u.experience || "mid", expertise: [],
+          workshop: u.workshopName || "Independent",
+          age: 30, device: "Unknown", os: "Unknown",
+          activeCourses: [
+            { name: "EV Repair Basics", progress: (u.courseProgress && u.courseProgress['ev_course'] && u.courseProgress['ev_course'].progress) || 0 },
+            { name: "BS6 & DPF System", progress: (u.courseProgress && u.courseProgress['bs6_course'] && u.courseProgress['bs6_course'].progress) || 0 },
+            { name: "Car AC Repair", progress: (u.courseProgress && u.courseProgress['ac_course'] && u.courseProgress['ac_course'].progress) || 0 },
+            { name: "Automobile Electrical", progress: (u.courseProgress && u.courseProgress['electrical_course'] && u.courseProgress['electrical_course'].progress) || 0 }
+          ]
+        }));
+      }
+    } catch(e) {}
+    initCities();
+    renderAll();
+  }
 
   const userRows = document.getElementById("userRows");
   const mobileList = document.getElementById("mobileList");
@@ -1228,7 +1097,33 @@
   const deleteConfirm = document.getElementById("deleteConfirm");
   const deleteCopy = document.getElementById("deleteCopy");
 
+  const exportModal = document.getElementById("exportModal");
+  const exportBackdrop = document.getElementById("exportBackdrop");
+  const exportPassword = document.getElementById("exportPassword");
+  const exportCancel = document.getElementById("exportCancel");
+  const exportConfirm = document.getElementById("exportConfirm");
+  const exportCsvOption = document.getElementById("exportCsvOption");
+  const exportPdfOption = document.getElementById("exportPdfOption");
+
   let pendingDeleteUserId = null;
+  let pendingExportFormat = null;
+  let editingUserId = null;
+
+  const editDrawer = document.getElementById("editDrawer");
+  const editBackdrop = document.getElementById("editBackdrop");
+  const editClose = document.getElementById("editClose");
+  const editDone = document.getElementById("editDone");
+  const editSave = document.getElementById("editSave");
+  const editAvatar = document.getElementById("editAvatar");
+  const editName = document.getElementById("editName");
+  const editPhone = document.getElementById("editPhone");
+  const editFullName = document.getElementById("editFullName");
+  const editCity = document.getElementById("editCity");
+  const editStatus = document.getElementById("editStatus");
+  const editExperience = document.getElementById("editExperience");
+  const editMechanicSection = document.getElementById("editMechanicSection");
+  const editOwnerSection = document.getElementById("editOwnerSection");
+  const editWorkshop = document.getElementById("editWorkshop");
 
   const roleMeta = {
     mechanic: { label: "Mechanic", className: "mechanic", icon: "🛠️" },
@@ -1501,10 +1396,19 @@
     if (!drawer.classList.contains("open")) document.body.style.overflow = "";
   }
 
-  function confirmDelete(){
+  async function confirmDelete(){
     if (deleteInput.value !== "DELETE" || !pendingDeleteUserId) return;
     const index = users.findIndex((user) => user.id === pendingDeleteUserId);
     if (index === -1) return;
+
+    try {
+      await fetch('/api/admin/users/' + pendingDeleteUserId, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation: 'DELETE' })
+      });
+    } catch(e) {}
+
     const [deletedUser] = users.splice(index, 1);
     closeDeleteModal();
     closeDrawer();
@@ -1513,23 +1417,183 @@
     window.alert(`${deletedUser.name} has been deleted from the admin list.`);
   }
 
-  function exportCsv(){
-    const filtered = getFilteredUsers();
-    const rows = [
-      ["User ID", "Name", "Phone", "Type", "City", "First IP", "Last IP", "Referral", "Last Login", "Status"],
-      ...filtered.map((user) => [user.id, user.name, user.phone, user.type, user.city, user.firstIp, user.lastIp, user.referral, user.lastLogin, user.status])
-    ];
-    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  // Step 1: Verify export password via dedicated backend API (POST /api/admin/verify-export-password)
+  // Password is sent in request body — never exposed in URL query strings or frontend code.
+  async function verifyExportPassword(password) {
+    const res = await fetch('/api/admin/verify-export-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    return data; // { success: true } or { success: false, error: '...' }
+  }
+
+  // Step 2: Once password is verified, proceed with the actual export download.
+  async function downloadExport(format) {
+    const res = await fetch(`/api/admin/export?format=${format}&password=${encodeURIComponent(exportPassword.value)}`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      return { success: false, error: error.error || 'Export failed' };
+    }
+
+    const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "gomico-admin-users.csv";
+    link.download = `gomico-admin-users.${format}`;
     link.click();
     URL.revokeObjectURL(url);
+    return { success: true };
   }
 
-  function handleAction(event){
+  // Combined: verify password → then export
+  async function executeExport(format, password) {
+    try {
+      // Validate empty input client-side before sending to server
+      if (!password || password.trim() === '') {
+        window.alert("Please enter the export password.");
+        return false;
+      }
+
+      // Step 1: Verify password
+      const verification = await verifyExportPassword(password);
+      if (!verification.success) {
+        // Show inline error instead of exposing what the correct password is
+        const errEl = document.getElementById('exportErrorMsg');
+        if (errEl) {
+          errEl.textContent = verification.error || "Incorrect password";
+          errEl.style.display = 'block';
+        } else {
+          window.alert("Incorrect password");
+        }
+        return false;
+      }
+
+      // Step 2: Password verified — now download the export file
+      const result = await downloadExport(format);
+      if (!result.success) {
+        window.alert("Export Failed: " + result.error);
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      window.alert("Network error. Could not export.");
+      return false;
+    }
+  }
+
+  function openExportModal(format) {
+    pendingExportFormat = format;
+    exportModal.classList.add("open");
+    exportModal.setAttribute("aria-hidden", "false");
+    exportPassword.value = "";
+    exportConfirm.disabled = true;
+    // Clear any previous error message
+    const errEl = document.getElementById('exportErrorMsg');
+    if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+    setTimeout(() => exportPassword.focus(), 100);
+  }
+
+  function closeExportModal() {
+    exportModal.classList.remove("open");
+    exportModal.setAttribute("aria-hidden", "true");
+    pendingExportFormat = null;
+    exportPassword.value = "";
+    // Clear inline error on close
+    const errEl = document.getElementById('exportErrorMsg');
+    if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+  }
+
+  async function confirmExport() {
+    const password = exportPassword.value;
+    exportConfirm.disabled = true;
+    exportConfirm.textContent = "Exporting...";
+
+    const success = await executeExport(pendingExportFormat, password);
+    
+    exportConfirm.textContent = "Confirm Export";
+    if (success) {
+      closeExportModal();
+    } else {
+      exportConfirm.disabled = false;
+    }
+  }
+
+  function openEditModal(id) {
+    const user = getUserById(id);
+    if (!user) return;
+
+    editingUserId = id;
+    editAvatar.textContent = roleMeta[user.type].icon;
+    editName.textContent = user.name;
+    editPhone.textContent = user.phone;
+    editFullName.value = user.name;
+    editCity.value = user.city;
+    editStatus.value = user.status;
+
+    // Show role-specific sections
+    editMechanicSection.style.display = user.type === "mechanic" ? "block" : "none";
+    editOwnerSection.style.display = user.type === "owner" ? "block" : "none";
+
+    if (user.type === "mechanic") {
+      editExperience.value = user.experience || "beginner";
+    } else if (user.type === "owner") {
+      editWorkshop.value = user.workshop || "";
+    }
+
+    editDrawer.classList.add("open");
+    editDrawer.setAttribute("aria-hidden", "false");
+  }
+
+  function closeEditModal() {
+    editDrawer.classList.remove("open");
+    editDrawer.setAttribute("aria-hidden", "true");
+    editingUserId = null;
+  }
+
+  async function saveEditChanges() {
+    if (!editingUserId) return;
+
+    const user = getUserById(editingUserId);
+    if (!user) return;
+
+    const payload = {};
+    if(editFullName.value) payload.fullName = editFullName.value;
+    if(editCity.value) payload.city = editCity.value;
+    payload.isActive = editStatus.value === "active";
+    if (user.type === "mechanic") {
+      payload.experience = editExperience.value;
+    } else if (user.type === "owner") {
+      payload.workshopName = editWorkshop.value;
+    }
+
+    try {
+      await fetch('/api/admin/users/' + editingUserId, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      user.name = editFullName.value || user.name;
+      user.city = editCity.value || user.city;
+      user.status = editStatus.value;
+      if (user.type === "mechanic") user.experience = editExperience.value;
+      else if (user.type === "owner") user.workshop = editWorkshop.value;
+    } catch(e) { window.alert('Failed'); return; }
+
+    window.alert(`User "${user.name}" updated successfully`);
+    closeEditModal();
+    renderAll();
+  }
+
+  async function handleAction(event){
     const trigger = event.target.closest("[data-action]");
     if (!trigger) return;
 
@@ -1539,8 +1603,19 @@
     if (!user) return;
 
     if (action === "view") openDrawer(id);
-    if (action === "edit") window.alert(`Edit flow placeholder for ${user.name}`);
-    if (action === "block") window.alert(`${user.status === "active" ? "Block" : "Unblock"} placeholder for ${user.name}`);
+    if (action === "edit") openEditModal(id);
+    if (action === "block") {
+      const newStatus = user.status === "active" ? false : true;
+      try {
+        await fetch('/api/admin/users/' + id + '/status', {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: newStatus })
+        });
+        user.status = newStatus ? "active" : "blocked";
+        renderAll();
+      } catch(e) { window.alert('Failed'); }
+    }
     if (action === "delete") openDeleteModal(id);
     if (action === "reset") window.alert(`Reset progress placeholder for ${user.name}`);
   }
@@ -1560,17 +1635,34 @@
     deleteConfirm.disabled = deleteInput.value !== "DELETE";
   });
   deleteConfirm.addEventListener("click", confirmDelete);
+
+  exportBackdrop.addEventListener("click", closeExportModal);
+  exportCancel.addEventListener("click", closeExportModal);
+  exportPassword.addEventListener("input", () => {
+    exportConfirm.disabled = exportPassword.value.length === 0;
+  });
+  exportConfirm.addEventListener("click", confirmExport);
+  exportCsvOption.addEventListener("click", () => openExportModal("csv"));
+  exportPdfOption.addEventListener("click", () => openExportModal("pdf"));
+
+  editBackdrop.addEventListener("click", closeEditModal);
+  editClose.addEventListener("click", closeEditModal);
+  editDone.addEventListener("click", closeEditModal);
+  editSave.addEventListener("click", saveEditChanges);
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
     if (event.key === "Escape" && deleteModal.classList.contains("open")) closeDeleteModal();
+    if (event.key === "Escape" && exportModal.classList.contains("open")) closeExportModal();
+    if (event.key === "Escape" && editDrawer.classList.contains("open")) closeEditModal();
     if (event.key === "Enter" && deleteModal.classList.contains("open") && deleteInput.value === "DELETE") confirmDelete();
+    if (event.key === "Enter" && exportModal.classList.contains("open") && exportPassword.value.length > 0) confirmExport();
   });
 
-  exportCsvBtn.addEventListener("click", exportCsv);
-  exportPdfBtn.addEventListener("click", () => window.print());
+  exportCsvBtn.addEventListener("click", () => openExportModal("csv"));
+  exportPdfBtn.addEventListener("click", () => openExportModal("pdf"));
 
-  initCities();
-  renderAll();
+  loadAdminUsers();
 </script>
 </body>
 </html>

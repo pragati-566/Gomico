@@ -37,6 +37,29 @@
     overflow-x:hidden;
   }
 
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    display: none; place-items: center; z-index: 100;
+  }
+  .modal-overlay.active { display: grid; }
+  .modal-card {
+    background: var(--ink-2); width: min(100% - 32px, 460px);
+    border-radius: 24px; padding: 32px; border: 1px solid var(--border);
+  }
+  .modal-card h2 { margin: 0 0 24px; font-size: 24px; font-weight: 800; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted); }
+  .form-group input, .form-group select {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--ink-1); color: #fff;
+    font-family: inherit; font-size: 15px; outline: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--lime); }
+  .modal-actions { display: flex; gap: 12px; margin-top: 32px; }
+  .modal-actions .btn { flex: 1; }
+
   a{color:inherit;text-decoration:none}
   button{font:inherit;cursor:pointer}
 
@@ -576,24 +599,30 @@
       scroll-behavior:auto !important;
     }
   }
-</style>
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
   <div class="page">
     <header class="topbar">
       <div class="container topbar-inner">
         <a class="brand" href="index.html" aria-label="GoMico home">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 28 24" fill="none">
-              <path d="M4 18L10 6L14 12L18 4L24 18Z" fill="#071D14" stroke="#071D14" stroke-width="1.5" stroke-linejoin="round"></path>
-              <circle cx="14" cy="14" r="2.5" fill="#92FC05"></circle>
-            </svg>
-          </span>
-          <span class="brand-name">GoMico</span>
+          <img src="assets/images/logo-gomico.svg" alt="GOMICO" style="height: 44px;">
         </a>
 
         <div class="topbar-actions">
-          <a class="btn edit" href="admin-dashboard.html">Admin Panel</a>
           <button class="btn logout" id="logout-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             Logout
@@ -677,110 +706,326 @@
     </main>
   </div>
 
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal-card">
+      <h2>Edit Profile</h2>
+      <form id="edit-profile-form">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="edit-name" required>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="edit-city" required>
+        </div>
+        <div id="mechanic-fields" style="display:none;">
+          <div class="form-group">
+            <label>Experience</label>
+            <select id="edit-experience">
+              <option value="0-1 Years">0-1 Years</option>
+              <option value="1-3 Years">1-3 Years</option>
+              <option value="3-5 Years">3-5 Years</option>
+              <option value="5-10 Years">5-10 Years</option>
+              <option value="10+ Years">10+ Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="owner-fields" style="display:none;">
+          <div class="form-group">
+            <label>Workshop Name</label>
+            <input type="text" id="edit-shop">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" style="background:transparent;border:1px solid var(--border)" id="cancel-edit">Cancel</button>
+          <button type="submit" class="btn" style="background:var(--lime);color:var(--ink-0)">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 <script>
-  const fallbackProfile = {
-    name: "Aman Singh",
-    city: "Bhopal",
-    role: "mechanic",
-    experience: "5-10 Years",
-    expertise: ["Electrical & Wiring"],
-    phone: "9998887776"
+  let userData = null;
+  let courses = [];
+
+  // Check if user is logged in
+  const token = localStorage.getItem('gomicoToken');
+  if (!token) {
+    window.location.href = 'onboarding.html';
+  }
+
+  async function loadDashboard() {
+    try {
+      // Fetch user dashboard data
+      const dashboardResponse = await fetch('/api/user/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!dashboardResponse.ok) {
+        if (dashboardResponse.status === 401) {
+          localStorage.removeItem('gomicoToken');
+          localStorage.removeItem('userData');
+          window.location.href = 'onboarding.html';
+          return;
+        }
+        throw new Error('Failed to load dashboard');
+      }
+
+      const dashboardData = await dashboardResponse.json();
+      userData = dashboardData.user;
+      
+      // Store progress in a way that renderCourses can use it
+      userData.courseProgress = {};
+      userData.courseCompleted = {};
+      if (dashboardData.courses) {
+        dashboardData.courses.forEach(c => {
+          userData.courseProgress[c.slug] = c.progress;
+          userData.courseCompleted[c.slug] = c.completed;
+        });
+      }
+
+      // Fetch courses
+      const coursesResponse = await fetch('/api/course/');
+      if (coursesResponse.ok) {
+        courses = await coursesResponse.json();
+      } else {
+        // Fallback courses if API fails
+        courses = [
+          { name: "EV Repair Basics", slug: "ev_course", description: "Electric Vehicle battery, motor, and safety basics.", type: "video" },
+          { name: "BS6 & DPF System", slug: "bs6_course", description: "Understanding BS6 emission norms and DPF regeneration.", type: "html" },
+          { name: "Car AC Repair", slug: "ac_course", description: "Complete guide to Car Air Conditioning systems.", type: "html" },
+          { name: "Automobile Electrical", slug: "electrical_course", description: "Wiring, fuses, relays, and sensors.", type: "html" }
+        ];
+      }
+      
+      // Inject completed status into courses for accurate filtering
+      courses = courses.map(c => ({
+        ...c,
+        completed: userData.courseCompleted[c.slug] === true
+      }));
+
+      console.log('Dashboard data loaded:', dashboardData);
+      renderDashboard();
+    } catch (error) {
+      console.error('Dashboard load error:', error);
+      // Fallback to onboarding if API fails
+      window.location.href = 'onboarding.html';
+    }
+  }
+
+  function renderDashboard() {
+    if (!userData) return;
+
+    // Update profile
+    const initials = userData.fullName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("") || "GM";
+
+    document.getElementById("avatar").textContent = initials;
+    document.getElementById("profile-name").textContent = userData.fullName;
+
+    // Role display
+    const roleText = userData.userType === "mechanic" ? "मैकेनिक (Mechanic)" :
+                    userData.userType === "workshop_owner" ? "मालिक (Owner)" :
+                    "छात्र (Student)";
+    document.getElementById("profile-role").textContent = roleText;
+
+    // City
+    document.getElementById("profile-city").textContent = `शहर: ${userData.city || 'N/A'}`;
+
+    // Experience (for mechanics)
+    if (userData.userType === 'mechanic' && userData.experience) {
+      document.getElementById("profile-exp").textContent = `अनुभव: ${userData.experience}`;
+    } else {
+      document.getElementById("profile-exp").style.display = 'none';
+    }
+
+    // Render courses
+    renderCourses();
+  }
+
+  function renderCourses() {
+    const courseStack = document.getElementById("course-stack");
+
+    courseStack.innerHTML = courses.map((course) => {
+      const progress = userData.courseProgress?.[course.slug] || 0;
+      const isCompleted = progress === 100;
+
+      let rightAction = progress > 0 ? (isCompleted ? "Learn Again →" : "Continue Learning →") : "Start Course →";
+      let highlight = isCompleted;
+
+      return `
+        <article class="course-card ${highlight ? "highlight" : ""}">
+          <div class="course-head">
+            <div class="course-icon" aria-hidden="true">⚡</div>
+            <div class="course-copy">
+              <h3>${course.title || course.name}</h3>
+              <p>${course.description}</p>
+            </div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-top">
+              <span>Progress</span>
+              <strong>${progress}%</strong>
+            </div>
+            <div class="bar">
+              <div class="bar-fill" style="width:${progress}%"></div>
+            </div>
+          </div>
+
+          <div class="course-actions">
+            ${isCompleted ? `<button class="chip-action success" type="button" onclick="window.handleCertificate('${course.slug}', this)">🏅 Download Certificate</button>` : ''}
+            <a class="link-action" style="${!isCompleted ? 'width:100%;text-align:center;' : ''}" href="${course.slug.includes('bs6') ? 'BS6_Course.html' : course.slug.includes('ac_') ? 'AC_Repair_Course.html' : course.slug.includes('electrical') ? 'Electric_Wiring_Course.html' : course.slug.includes('ev_') ? 'ev_course.html' : course.slug + '.html'}?id=${course.slug}">${rightAction}</a>
+          </div>
+        </article>
+      `;
+    }).join("");
+
+    // Update metrics
+    const totalCourses = courses.length;
+    const completedCourses = courses.filter(course => {
+      const p = userData.courseProgress?.[course.slug] || 0;
+      return p === 100 || course.completed === true;
+    }).length;
+    const inProgressCourses = courses.filter(course => {
+      const p = userData.courseProgress?.[course.slug] || 0;
+      return p > 0 && p < 100;
+    }).length;
+
+    console.log('Metrics calculated:', { totalCourses, completedCourses, inProgressCourses });
+
+    document.getElementById("completed-count").textContent = String(completedCourses);
+    document.getElementById("progress-count").textContent = String(inProgressCourses);
+  }
+
+  window.handleCertificate = async function(courseSlug, btn) {
+    console.log('handleCertificate clicked for:', courseSlug);
+    const progress = Number(userData.courseProgress?.[courseSlug] || 0);
+    console.log('Current progress for slug:', progress);
+
+    if (progress < 100) {
+      alert("Please complete the course to download the certificate. Current progress: " + progress + "%");
+      return;
+    }
+
+    const originalText = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> Downloading...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch(`/api/user/certificate/${courseSlug}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('gomicoToken')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to download certificate');
+      }
+
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      console.log('Certificate blob received:', pdfBlob.size, 'bytes');
+      
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Certificate_${courseSlug}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+      
+      console.log('Download initiated successfully');
+    } catch (err) {
+      console.error('Certificate download error:', err);
+      alert("Error: " + err.message);
+    } finally {
+      // Keep "Downloading..." state for at least 1 second for visual feedback
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 1000);
+    }
   };
 
-  const courses = [
-    {
-      title: "EV Repair Basics",
-      desc: "Electric Vehicle battery, motor, and safety basics.",
-      progress: 100,
-      leftAction: "🏅 Download Certificate",
-      rightAction: "Learn Again →",
-      highlight: true
-    },
-    {
-      title: "BS6 & DPF System",
-      desc: "Understanding BS6 emission norms and DPF regeneration.",
-      progress: 70,
-      leftAction: "🔒 Certificate Locked",
-      rightAction: "Continue Learning →",
-      highlight: false
-    },
-    {
-      title: "Car AC Repair",
-      desc: "Complete guide to Car Air Conditioning systems.",
-      progress: 0,
-      leftAction: "🔒 Certificate Locked",
-      rightAction: "Start Course →",
-      highlight: false
-    },
-    {
-      title: "Automobile Electrical",
-      desc: "Wiring, fuses, relays, and sensors.",
-      progress: 0,
-      leftAction: "🔒 Certificate Locked",
-      rightAction: "Start Course →",
-      highlight: false
-    }
-  ];
 
-  const stored = localStorage.getItem("gomicoProfile");
-  const profile = stored ? { ...fallbackProfile, ...JSON.parse(stored) } : fallbackProfile;
 
-  const initials = profile.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || "")
-    .join("") || "GM";
-
-  document.getElementById("avatar").textContent = initials;
-  document.getElementById("profile-name").textContent = profile.name;
-  document.getElementById("profile-role").textContent =
-    profile.role === "mechanic" ? "मैकेनिक (Mechanic)" :
-    profile.role === "owner" ? "मालिक (Owner)" :
-    "छात्र (Student)";
-  document.getElementById("profile-city").textContent = `शहर: ${profile.city}`;
-  document.getElementById("profile-exp").textContent = `अनुभव: ${profile.experience || fallbackProfile.experience}`;
-
-  const courseStack = document.getElementById("course-stack");
-  courseStack.innerHTML = courses.map((course) => `
-    <article class="course-card ${course.highlight ? "highlight" : ""}">
-      <div class="course-head">
-        <div class="course-icon" aria-hidden="true">⚡</div>
-        <div class="course-copy">
-          <h3>${course.title}</h3>
-          <p>${course.desc}</p>
-        </div>
-      </div>
-
-      <div class="progress-wrap">
-        <div class="progress-top">
-          <span>Progress</span>
-          <strong>${course.progress}%</strong>
-        </div>
-        <div class="bar">
-          <div class="bar-fill" style="width:${course.progress}%"></div>
-        </div>
-      </div>
-
-      <div class="course-actions">
-        <button class="chip-action ${course.progress === 100 ? "success" : ""}" type="button">${course.leftAction}</button>
-        <a class="link-action" href="#">${course.rightAction}</a>
-      </div>
-    </article>
-  `).join("");
-
-  const completedCourses = courses.filter((course) => course.progress === 100).length;
-  document.getElementById("completed-count").textContent = String(completedCourses);
-  document.getElementById("progress-count").textContent = "4";
-
+  // Event listeners
   document.getElementById("edit-profile").addEventListener("click", () => {
-    window.location.href = "onboarding.html";
+    document.getElementById("edit-name").value = userData.fullName || "";
+    document.getElementById("edit-city").value = userData.city || "";
+    
+    if (userData.userType === 'mechanic') {
+      document.getElementById("mechanic-fields").style.display = "block";
+      document.getElementById("owner-fields").style.display = "none";
+      document.getElementById("edit-experience").value = userData.experience || "0-1 Years";
+    } else if (userData.userType === 'workshop_owner') {
+      document.getElementById("mechanic-fields").style.display = "none";
+      document.getElementById("owner-fields").style.display = "block";
+      document.getElementById("edit-shop").value = userData.workshopName || "";
+    } else {
+      document.getElementById("mechanic-fields").style.display = "none";
+      document.getElementById("owner-fields").style.display = "none";
+    }
+    
+    document.getElementById("edit-modal").classList.add("active");
+  });
+  
+  document.getElementById("cancel-edit").addEventListener("click", () => {
+    document.getElementById("edit-modal").classList.remove("active");
+  });
+  
+  document.getElementById("edit-profile-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      fullName: document.getElementById("edit-name").value,
+      city: document.getElementById("edit-city").value
+    };
+    if (userData.userType === 'mechanic') {
+      payload.experience = document.getElementById("edit-experience").value;
+    } else if (userData.userType === 'workshop_owner') {
+      payload.workshopName = document.getElementById("edit-shop").value;
+    }
+    
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        document.getElementById("edit-modal").classList.remove("active");
+        loadDashboard(); // reload dashboard
+      } else {
+        alert("Failed to update profile.");
+      }
+    } catch (e) {
+      alert("Error updating profile.");
+    }
   });
 
   document.getElementById("logout-btn").addEventListener("click", () => {
-    localStorage.removeItem("gomicoProfile");
-    window.location.href = "onboarding.html";
+    localStorage.removeItem('gomicoToken');
+    localStorage.removeItem('userData');
+    window.location.href = 'onboarding.html';
   });
+
+  // Load dashboard on page load
+  loadDashboard();
 </script>
 </body>
 </html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gomico API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Gomico Backend API Test</h1>
+
+    <div class="section">
+        <h2>1. Send OTP</h2>
+        <input type="text" id="phone" placeholder="Enter phone number (10 digits)" maxlength="10">
+        <button onclick="sendOTP()">Send OTP</button>
+        <pre id="otpResponse"></pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Verify OTP</h2>
+        <input type="text" id="otpPhone" placeholder="Phone number">
+        <input type="text" id="otp" placeholder="Enter OTP">
+        <button onclick="verifyOTP()">Verify OTP</button>
+        <pre id="verifyResponse"></pre>
+    </div>
+
+    <div class="section">
+        <h2>3. Register User</h2>
+        <input type="text" id="regPhone" placeholder="Phone">
+        <select id="userType">
+            <option value="mechanic">Mechanic</option>
+            <option value="workshop_owner">Workshop Owner</option>
+            <option value="student">Student</option>
+        </select>
+        <input type="text" id="fullName" placeholder="Full Name">
+        <input type="text" id="city" placeholder="City">
+        <button onclick="registerUser()">Register</button>
+        <pre id="registerResponse"></pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Get Dashboard</h2>
+        <button onclick="getDashboard()">Get Dashboard</button>
+        <pre id="dashboardResponse"></pre>
+    </div>
+
+    <div class="section">
+        <h2>5. Admin Login</h2>
+        <input type="text" id="adminUser" placeholder="Username">
+        <input type="password" id="adminPass" placeholder="Password">
+        <button onclick="adminLogin()">Admin Login</button>
+        <pre id="adminResponse"></pre>
+    </div>
+
+    <div class="section">
+        <h2>6. Get Users (Admin)</h2>
+        <button onclick="getUsers()">Get Users</button>
+        <pre id="usersResponse"></pre>
+    </div>
+
+    <script>
+        let userToken = '';
+        let adminToken = '';
+
+        async function apiCall(endpoint, method = 'GET', data = null, token = '') {
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const config = { method, headers };
+            if (data) config.body = JSON.stringify(data);
+
+            const response = await fetch(`/api${endpoint}`, config);
+            return await response.json();
+        }
+
+        function sendOTP() {
+            const phone = document.getElementById('phone').value;
+            apiCall('/auth/send-otp', 'POST', { phone })
+                .then(data => document.getElementById('otpResponse').textContent = JSON.stringify(data, null, 2));
+        }
+
+        function verifyOTP() {
+            const phone = document.getElementById('otpPhone').value;
+            const otp = document.getElementById('otp').value;
+            apiCall('/auth/verify-otp', 'POST', { phone, otp })
+                .then(data => {
+                    document.getElementById('verifyResponse').textContent = JSON.stringify(data, null, 2);
+                    if (data.token) userToken = data.token;
+                });
+        }
+
+        function registerUser() {
+            const phone = document.getElementById('regPhone').value;
+            const userType = document.getElementById('userType').value;
+            const fullName = document.getElementById('fullName').value;
+            const city = document.getElementById('city').value;
+
+            apiCall('/auth/register', 'POST', { phone, userType, fullName, city })
+                .then(data => {
+                    document.getElementById('registerResponse').textContent = JSON.stringify(data, null, 2);
+                    if (data.token) userToken = data.token;
+                });
+        }
+
+        function getDashboard() {
+            apiCall('/user/dashboard', 'GET', null, userToken)
+                .then(data => document.getElementById('dashboardResponse').textContent = JSON.stringify(data, null, 2));
+        }
+
+        function adminLogin() {
+            const username = document.getElementById('adminUser').value;
+            const password = document.getElementById('adminPass').value;
+            apiCall('/admin/login', 'POST', { username, password })
+                .then(data => {
+                    document.getElementById('adminResponse').textContent = JSON.stringify(data, null, 2);
+                    if (data.token) adminToken = data.token;
+                });
+        }
+
+        function getUsers() {
+            apiCall('/admin/users', 'GET', null, adminToken)
+                .then(data => document.getElementById('usersResponse').textContent = JSON.stringify(data, null, 2));
+        }
+    </script>
+</body>
+</html>

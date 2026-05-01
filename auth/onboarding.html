@@ -210,12 +210,12 @@
     width:22px;height:22px;border-radius:50%;border:1px solid currentColor;display:grid;place-items:center;font-size:12px;opacity:.72;
   }
 
-  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
-  .chip{
+  .expertise-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .expertise-option{
     min-height:29px;padding:6px 12px;border-radius:5px;border:1px solid var(--line);background:var(--bg-1);
     color:var(--muted);font-size:14px;line-height:1.3;font-weight:500;transition:border-color .18s ease,background .18s ease,color .18s ease;
   }
-  .chip.active{border-color:var(--lime);background:rgba(146,252,5,.1);color:#fff}
+  .expertise-option.selected{border-color:var(--lime);background:rgba(146,252,5,.1);color:#fff}
   .works-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
   .work-chip{
     height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg-1);color:var(--muted);
@@ -232,6 +232,24 @@
   }
   .btn:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(146,252,5,.12)}
   .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+  .expertise-container.error-border {
+    box-shadow: 0 0 0 2px #ff4d4f;
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(255, 77, 79, 0.05);
+    margin: 6px -8px 0;
+  }
+  .error-text {
+    color: #ff4d4f;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    display: none;
+  }
+  .error-text.show {
+    display: block;
+  }
 
   .welcome-wrap{display:flex;flex-direction:column;gap:40px;align-items:center}
   .welcome-head{display:flex;flex-direction:column;gap:24px;align-items:center;width:100%}
@@ -390,21 +408,22 @@
           </select>
         </div>
 
-        <div class="group">
+        <div class="group" id="expertise-group">
           <div class="label">Expertise</div>
-          <div class="chips" id="expertise-set">
-            <button type="button" class="chip" data-chip="Electrical &amp; Wiring">Electrical &amp; Wiring</button>
-            <button type="button" class="chip" data-chip="Engine &amp; Repair">Engine &amp; Repair</button>
-            <button type="button" class="chip" data-chip="AC Repair">AC Repair</button>
-            <button type="button" class="chip" data-chip="Denting &amp; Painting">Denting &amp; Painting</button>
-            <button type="button" class="chip" data-chip="Windshield">Windshield</button>
-            <button type="button" class="chip" data-chip="Other">Other</button>
+          <div class="expertise-container" id="expertise-set">
+            <button type="button" class="expertise-option" data-chip="Electrical &amp; Wiring">Electrical &amp; Wiring</button>
+            <button type="button" class="expertise-option" data-chip="Engine &amp; Repair">Engine &amp; Repair</button>
+            <button type="button" class="expertise-option" data-chip="AC Repair">AC Repair</button>
+            <button type="button" class="expertise-option" data-chip="Denting &amp; Painting">Denting &amp; Painting</button>
+            <button type="button" class="expertise-option" data-chip="Windshield">Windshield</button>
+            <button type="button" class="expertise-option" data-chip="Other">Other</button>
           </div>
+          <div id="expertise-error" class="error-text">Please select at least one expertise</div>
         </div>
 
         <div class="group"><input class="input" id="referral-code" type="text" placeholder="Referral Code (Optional)" /></div>
 
-        <button class="btn" id="complete-mechanic">Complete</button>
+        <button type="button" class="btn" id="completeBtn">Complete</button>
       </section>
 
       <section class="card panel owner" id="step-owner-1">
@@ -516,7 +535,7 @@
   let resendTimer = null;
   let selectedRole = "mechanic";
   let selectedWorkType = "4 Wheeler";
-  const expertise = new Set(["Electrical & Wiring"]);
+  const expertise = new Set();
 
   const BACKGROUNDS = {
     phone: getComputedStyle(document.documentElement).getPropertyValue("--phone-bg"),
@@ -588,11 +607,7 @@
     roleContinueBtn.disabled = !selectedRole;
   }
 
-  function syncChips(){
-    document.querySelectorAll("[data-chip]").forEach((chip) => {
-      chip.classList.toggle("active", expertise.has(chip.dataset.chip));
-    });
-  }
+
 
   function syncWorkType(){
     document.querySelectorAll(".work-chip").forEach((chip) => {
@@ -625,7 +640,7 @@
       city: selectedRole === "mechanic" ? (mechanicCityEl.value.trim() || "Bhopal") : selectedRole === "owner" ? (ownerCityEl.value.trim() || "Bhopal") : (studentCityEl.value.trim() || "Bhopal"),
       worksOn: selectedRole === "mechanic" ? selectedWorkType : "",
       experience: selectedRole === "mechanic" ? experienceEl.value : "",
-      expertise: selectedRole === "mechanic" ? [...expertise] : [],
+      expertise: selectedRole === "mechanic" ? Array.from(document.querySelectorAll(".expertise-option.selected")).map(btn => btn.dataset.chip) : [],
       referral: selectedRole === "mechanic" ? referralEl.value.trim() : "",
       shopName: selectedRole === "owner" ? ownerShopEl.value.trim() : "",
       age: selectedRole === "student" ? studentAgeEl.value.trim() : ""
@@ -638,8 +653,9 @@
     current = "phone";
     selectedRole = "mechanic";
     selectedWorkType = "4 Wheeler";
-    expertise.clear();
-    expertise.add("Electrical & Wiring");
+    document.querySelectorAll(".expertise-option").forEach(btn => btn.classList.remove("selected"));
+    document.getElementById("expertise-set").classList.remove("error-border");
+    document.getElementById("expertise-error").classList.remove("show");
     phoneInput.value = "";
     otpTarget.textContent = "+91 000 000 0000";
     document.querySelectorAll(".otp-cell").forEach((cell) => { cell.value = ""; });
@@ -721,12 +737,14 @@
     });
   });
 
-  document.querySelectorAll("[data-chip]").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const value = chip.dataset.chip;
-      if (expertise.has(value)) expertise.delete(value);
-      else expertise.add(value);
-      syncChips();
+  document.querySelectorAll(".expertise-option").forEach((option) => {
+    option.addEventListener("click", () => {
+      option.classList.toggle("selected");
+      // Real-time fix: if at least one selected, remove error
+      if (document.querySelector(".expertise-option.selected")) {
+        document.getElementById("expertise-set").classList.remove("error-border");
+        document.getElementById("expertise-error").classList.remove("show");
+      }
     });
   });
 
@@ -740,7 +758,27 @@
     showStep("mechanic-2");
   });
 
-  document.getElementById("complete-mechanic").addEventListener("click", () => {
+  document.getElementById("completeBtn").addEventListener("click", (e) => {
+    e.preventDefault(); // Stop any native behavior immediately
+    
+    const selectedOptions = document.querySelectorAll(".expertise-option.selected");
+    
+    if (selectedOptions.length === 0) {
+      console.log("Validation blocked");
+      document.getElementById("expertise-set").classList.add("error-border");
+      document.getElementById("expertise-error").classList.add("show");
+      return; // Hard stop
+    }
+
+    // Debugging logs requirement
+    const selectedValues = Array.from(selectedOptions).map(btn => btn.textContent.trim());
+    console.log("Selected:", selectedValues);
+    console.log("Validation passed");
+
+    document.getElementById("expertise-set").classList.remove("error-border");
+    document.getElementById("expertise-error").classList.remove("show");
+
+    // Strictly run save and navigation ONLY if validation passes
     saveProfile();
     showStep("mechanic-welcome");
   });

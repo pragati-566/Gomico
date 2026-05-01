@@ -6953,7 +6953,7 @@ body{font-family:var(--font-body);background:var(--bg-deepest);color:var(--text)
     <p style="color:#92FC05; font-weight:700; margin-top:15px;">🚗 Keep Learning • Keep Growing • Keep Cooling! ❄️</p>
   </div>
 
-  <div class="mod-nav"><button onclick="goTo(15)">← Chapter 15</button><button class="primary" onclick="goTo(0)">🏠 Overview पर वापस</button></div>
+  <div class="mod-nav"><button onclick="goTo(15)">← Chapter 15</button><button class="primary" id="complete-course-btn" onclick="markCourseComplete()">✅ Complete Course</button></div>
 </section>
 
 
@@ -6970,6 +6970,29 @@ body{font-family:var(--font-body);background:var(--bg-deepest);color:var(--text)
 <script>
 const TOTAL = 17;
 let current = 0;
+let isCompleted = false;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseSlug = urlParams.get('id') || 'ac_course';
+  const token = localStorage.getItem('gomicoToken');
+  if (!token) return;
+  try {
+    const res = await fetch('/api/user/dashboard', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.user && data.user.courseProgress && data.user.courseProgress[courseSlug] === 100) {
+      isCompleted = true;
+      const btn = document.getElementById('complete-course-btn');
+      if(btn) {
+        btn.disabled = false;
+        btn.textContent = '🏁 Finish My Course';
+        btn.onclick = () => { window.location.href = 'dashboard.html'; };
+      }
+    }
+  } catch (err) { }
+});
 
 function goTo(i) {
   document.querySelectorAll('.mod').forEach(m => m.classList.remove('active'));
@@ -6984,9 +7007,58 @@ function goTo(i) {
 }
 
 function updateProgress() {
-  const pct = Math.round((current / (TOTAL - 1)) * 100);
+  let pct = Math.round((current / (TOTAL - 1)) * 100);
+  if (pct === 100 && !isCompleted) {
+    pct = 99;
+  }
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = pct + '%';
+  saveProgress(pct);
+}
+
+async function markCourseComplete() {
+  if (isCompleted) return;
+  const btn = document.getElementById('complete-course-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Completing...';
+  }
+  
+  await saveProgress(100);
+  
+  isCompleted = true;
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = '🏁 Finish My Course';
+    btn.onclick = () => { window.location.href = 'dashboard.html'; };
+  }
+  
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressText').textContent = '100%';
+  
+  setTimeout(() => {
+    window.location.href = "dashboard.html";
+  }, 1500);
+}
+
+async function saveProgress(pct) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseSlug = urlParams.get('id') || 'ac_course';
+  const token = localStorage.getItem('gomicoToken');
+  if (!token) return;
+
+  try {
+    await fetch(`/api/user/course-progress/${courseSlug}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ progress: pct })
+    });
+  } catch (err) {
+    console.error('Error saving progress:', err);
+  }
 }
 
 function toggleSidebar() {

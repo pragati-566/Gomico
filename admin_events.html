@@ -219,7 +219,7 @@
   <div class="page">
     <header class="topbar">
       <div class="container topbar-inner">
-        <a class="brand" href="index.html">
+        <a class="brand" href="/">
           <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
         </a>
 
@@ -228,9 +228,9 @@
         </div>
 
         <div class="topbar-actions">
-          <a class="btn primary" href="index.html">Close Admin</a>
-          <a class="btn dark" href="events.html">Public Events</a>
-          <a class="btn ghost" href="login.html">Logout</a>
+          <a class="btn primary" href="/">Close Admin</a>
+          <a class="btn dark" href="/events.html">Public Events</a>
+          <button class="btn ghost" data-admin-logout>Logout</button>
         </div>
       </div>
     </header>
@@ -243,9 +243,9 @@
         </div>
 
         <nav class="nav-tabs" aria-label="Admin sections">
-          <a class="nav-tab" href="admin-dashboard.html">Overview</a>
-          <a class="nav-tab" href="admin-users.html">User Management</a>
-          <a class="nav-tab active" href="admin-events.html">Events</a>
+          <a class="nav-tab" href="/admin">Overview</a>
+          <a class="nav-tab" href="/admin/users">User Management</a>
+          <a class="nav-tab active" href="/admin/events">Events</a>
         </nav>
       </section>
 
@@ -326,6 +326,7 @@
     </main>
   </div>
 
+<script src="/admin_auth.js"></script>
 <script>
   const fallbackImage = "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80";
   const events = [
@@ -513,6 +514,12 @@
   });
 
   updatePreview();
+
+  // Auth guard — must be last so page content renders before modal if needed
+  initAdminPage().catch(err => {
+    console.error('[Admin Events] Auth failed:', err);
+  });
+
   renderAll();
 </script>
 </body>

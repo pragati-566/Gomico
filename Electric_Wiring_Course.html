@@ -3703,7 +3703,7 @@ a{color:inherit;text-decoration:none}
 
       <div class="mod-nav">
         <button onclick="goTo(15)">← Chapter 15</button>
-        <button class="primary" onclick="goTo(0)">🏠 Course Overview</button>
+        <button class="primary" id="complete-course-btn" onclick="markCourseComplete()">✅ Complete Course</button>
       </div>
     </section>
 
@@ -3719,6 +3719,29 @@ a{color:inherit;text-decoration:none}
 <script>
 const TOTAL = 17;
 let current = 0;
+let isCompleted = false;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseSlug = urlParams.get('id') || 'electrical_course';
+  const token = localStorage.getItem('gomicoToken');
+  if (!token) return;
+  try {
+    const res = await fetch('/api/user/dashboard', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.user && data.user.courseProgress && data.user.courseProgress[courseSlug] === 100) {
+      isCompleted = true;
+      const btn = document.getElementById('complete-course-btn');
+      if(btn) {
+        btn.disabled = false;
+        btn.textContent = '🏁 Finish My Course';
+        btn.onclick = () => { window.location.href = 'dashboard.html'; };
+      }
+    }
+  } catch (err) { }
+});
 
 function goTo(n) {
   const mods = document.querySelectorAll('.mod');
@@ -3744,9 +3767,58 @@ function goTo(n) {
 }
 
 function updateProgress() {
-  const pct = Math.round((current / (TOTAL - 1)) * 100);
+  let pct = Math.round((current / (TOTAL - 1)) * 100);
+  if (pct === 100 && !isCompleted) {
+    pct = 99;
+  }
   document.getElementById('progressBar').style.width = pct + '%';
   document.getElementById('progressText').textContent = pct + '%';
+  saveProgress(pct);
+}
+
+async function markCourseComplete() {
+  if (isCompleted) return;
+  const btn = document.getElementById('complete-course-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Completing...';
+  }
+  
+  await saveProgress(100);
+  
+  isCompleted = true;
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = '🏁 Finish My Course';
+    btn.onclick = () => { window.location.href = 'dashboard.html'; };
+  }
+  
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('progressText').textContent = '100%';
+  
+  setTimeout(() => {
+    window.location.href = "dashboard.html";
+  }, 1500);
+}
+
+async function saveProgress(pct) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseSlug = urlParams.get('id') || 'electrical_course';
+  const token = localStorage.getItem('gomicoToken');
+  if (!token) return;
+
+  try {
+    await fetch(`/api/user/course-progress/${courseSlug}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ progress: pct })
+    });
+  } catch (err) {
+    console.error('Error saving progress:', err);
+  }
 }
 
 // Sidebar toggle

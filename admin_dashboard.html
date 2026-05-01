@@ -698,7 +698,7 @@
   <div class="page">
     <header class="topbar">
       <div class="container topbar-inner">
-        <a class="brand" href="index.html">
+        <a class="brand" href="/">
           <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
         </a>
 
@@ -707,9 +707,9 @@
         </div>
 
         <div class="topbar-actions">
-          <a class="btn primary" href="index.html">Close Admin</a>
-          <a class="btn dark" href="admin-events.html">Admin Events</a>
-          <a class="btn ghost" href="login.html">Logout</a>
+          <a class="btn primary" href="/">Close Admin</a>
+          <a class="btn dark" href="/admin/events">Admin Events</a>
+          <button class="btn ghost" data-admin-logout>Logout</button>
         </div>
       </div>
     </header>
@@ -722,9 +722,9 @@
         </div>
 
         <nav class="nav-tabs" aria-label="Admin sections">
-          <a class="nav-tab active" href="admin-dashboard.html">Overview</a>
-          <a class="nav-tab" href="admin-users.html">User Management</a>
-          <a class="nav-tab" href="admin-events.html">Events</a>
+          <a class="nav-tab active" href="/admin">Overview</a>
+          <a class="nav-tab" href="/admin/users">User Management</a>
+          <a class="nav-tab" href="/admin/events">Events</a>
         </nav>
       </section>
 
@@ -806,7 +806,7 @@
               <h2 class="panel-title">Course Completion Rate</h2>
               <p class="panel-copy">Per-course completion health based on enrolled users and certificates issued in the selected reporting window.</p>
             </div>
-            <a class="btn dark" href="admin-users.html">Inspect Learners</a>
+            <a class="btn dark" href="/admin/users">Inspect Learners</a>
           </div>
 
           <div class="course-list" id="courseList"></div>
@@ -849,6 +849,7 @@
     </main>
   </div>
 
+<script src="/admin_auth.js"></script>
 <script>
   const dashboardData = {
     2026: {
@@ -1155,12 +1156,15 @@
       <div class="course-item">
         <div class="course-row">
           <strong>${course.name}</strong>
-          <span>${course.rate}%</span>
+          <span>${course.rate}% Completion</span>
         </div>
         <div class="progress-track">
           <span class="progress-fill" style="width:${course.rate}%;background:${course.color}"></span>
         </div>
-        <p style="margin:12px 0 0;color:var(--muted);font-size:13px;">${formatNumber(course.learners)} learners enrolled in this course.</p>
+        <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:13px; color:var(--muted);">
+           <span>Learners: ${formatNumber(course.learners)}</span>
+           <span>Avg Progress: ${course.avgProgress || 0}%</span>
+        </div>
       </div>
     `).join("");
   }
@@ -1172,11 +1176,43 @@
     attentionValue.textContent = formatNumber(data.totals.attention);
   }
 
-  function renderDashboard(){
+  async function renderDashboard(){
+    const token = await ensureAdminAuth();
+    
+    let apiData = {};
+    try {
+      const res = await fetch('/api/admin/dashboard', { headers: { 'Authorization': `Bearer ${token}` } });
+      if(res.ok) apiData = await res.json();
+    } catch(e) {}
+
     const year = yearSelect.value;
     const period = periodSelect.value;
     const data = dashboardData[year];
     const periodData = data.periods[period];
+
+    // Merge live data
+    if(apiData.totalUsers !== undefined) {
+      data.totals.users = apiData.totalUsers;
+      data.totals.mechanics = apiData.mechanics;
+      data.totals.owners = apiData.workshopOwners;
+      data.totals.students = apiData.students;
+      data.totals.active7d = apiData.activeUsers;
+      
+      if(apiData.courseCompletionRates) {
+        const updateCourse = (keyword, slug) => {
+          const course = data.courses.find(c => c.name.includes(keyword));
+          if (course) {
+            course.rate = apiData.courseCompletionRates[slug] || 0;
+            course.learners = apiData.totalLearners?.[slug] || 0;
+            course.avgProgress = apiData.averageProgress?.[slug] || 0;
+          }
+        };
+        updateCourse("EV", "ev_course");
+        updateCourse("BS6", "bs6_course");
+        updateCourse("AC", "ac_course");
+        updateCourse("Electrical", "electrical_course");
+      }
+    }
 
     createMetricCards(data);
     buildLineChart(periodData.labels, periodData.values);
