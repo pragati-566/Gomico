@@ -7,6 +7,7 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
+app.set('trust proxy', 1); // Trust Render load balancer to get real user IP
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -75,7 +76,10 @@ if (process.env.TEST_MODE === 'true' && !process.env.FIXED_OTP) {
   console.warn('⚠️  WARNING: TEST_MODE is enabled but FIXED_OTP is not defined. Falling back to default (1234).');
 }
 
-// Connect to MongoDB
+console.log('🚀 Server boot started...');
+console.log('⚙️ Environment variables loaded');
+
+// Connect to MongoDB (non-blocking)
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -83,39 +87,33 @@ mongoose.connect(mongoUri, {
 .then(() => console.log('✅ MongoDB connected'))
 .catch(err => {
   console.error('❌ MongoDB connection error:', err);
-  process.exit(1);
+  // Continuing boot even if DB fails initially, to allow Express to bind port for Render health checks
 });
 
-const PORT = parseInt(process.env.PORT, 10) || 3000;
-const MAX_ATTEMPTS = 10;
+console.log('🚀 Express initialized');
 
-function startServer(port, attempts = 0) {
-  if (attempts >= MAX_ATTEMPTS) {
-    console.error(`❌ Could not find an open port after ${MAX_ATTEMPTS} attempts.`);
+const PORT = process.env.PORT || 5000;
+
+function startServer() {
+  try {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✅ Listening on PORT ${PORT}`);
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+
+    server.on('error', (err) => {
+      console.error('❌ Server startup error:', err);
+      if (err.code === 'EADDRINUSE') {
+         console.error(`❌ Port ${PORT} is already in use.`);
+      }
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error('❌ Critical startup failure:', error);
     process.exit(1);
   }
-
-  const server = app.listen(port, () => {
-    console.log(`\n✅  GoMico backend running → http://localhost:${port}`);
-    if (port !== PORT) {
-      console.warn(`⚠️   Default port ${PORT} was busy — using port ${port} instead.`);
-    }
-  });
-
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`⚠️   Port ${port} in use, trying another port...`);
-      // Close this server instance to avoid memory leaks or ghost bindings
-      server.close();
-      // Try the next port
-      startServer(port + 1, attempts + 1);
-    } else {
-      console.error('❌  Unhandled server error:', err);
-      process.exit(1);
-    }
-  });
 }
 
 // Start the server
-startServer(PORT);
+startServer();
 
