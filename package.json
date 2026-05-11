@@ -1,0 +1,11 @@
+{
+  "name": "gomico",
+  "version": "1.0.0",
+  "description": "GoMico Learning Platform",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "cd backend && nodemon --delay 1.5 server.js",
+    "install:backend": "cd backend && npm install",
+    "postinstall": "cd backend && npm install"
+  }
+}
