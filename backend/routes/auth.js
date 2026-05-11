@@ -5,7 +5,7 @@ const OTP = require('../models/OTP');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
-const TEST_MODE = String(process.env.TEST_MODE || '').trim() === 'true';
+const TEST_MODE = String(process.env.TEST_MODE || '').replace(/['"]/g, '').trim() === 'true';
 
 
 // Rate limiting for OTP requests
@@ -75,11 +75,11 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid phone number' });
     }
 
-    const authMode = (process.env.AUTH_MODE || 'real_otp').trim();
+    const authMode = String(process.env.AUTH_MODE || 'real_otp').replace(/['"]/g, '').trim();
     const isFixedOTP = authMode === 'fixed_otp' || TEST_MODE;
 
     // Generate OTP
-    const otp = isFixedOTP ? ((process.env.FIXED_OTP || "1234").trim()) : generateOTP();
+    const otp = isFixedOTP ? (String(process.env.FIXED_OTP || "1234").replace(/['"]/g, '').trim()) : generateOTP();
 
     // Save OTP to database
     await OTP.findOneAndDelete({ phone }); // Remove any existing OTP
