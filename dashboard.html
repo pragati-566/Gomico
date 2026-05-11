@@ -290,9 +290,47 @@
     box-shadow:0 24px 62px rgba(0,0,0,.28), 0 0 48px rgba(146,252,5,.08);
   }
 
-  .course-card:hover{
+  .course-card:not(.coming-soon):hover{
     transform:translateY(-4px);
     border-color:rgba(146,252,5,.24);
+  }
+
+  .course-card.coming-soon{
+    opacity:.6;
+    cursor:not-allowed;
+    filter: grayscale(0.4);
+  }
+
+  .coming-soon-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    background:rgba(255,180,0,.12);
+    border:1px solid rgba(255,180,0,.32);
+    color:#ffb400;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    margin-left:auto;
+  }
+
+  .btn-coming-soon{
+    height:36px;
+    padding:0 18px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.04);
+    color:rgba(255,255,255,.35);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:-.01em;
+    cursor:not-allowed;
+    pointer-events:none;
+    width:100%;
+    text-align:center;
   }
 
   .course-head{
@@ -854,16 +892,29 @@
     courseStack.innerHTML = courses.map((course) => {
       const progress = userData.courseProgress?.[course.slug] || 0;
       const isCompleted = progress === 100;
+      const isEV = (course.slug || '').toLowerCase().includes('ev_') || 
+                   (course.slug || '').toLowerCase().includes('ev-') ||
+                   (course.title || course.name || '').toLowerCase().includes('ev repair');
 
       let rightAction = progress > 0 ? (isCompleted ? "Learn Again →" : "Continue Learning →") : "Start Course →";
       let highlight = isCompleted;
 
+      // Resolve course URL for non-EV courses
+      const courseUrl = course.slug.includes('bs6') ? 'BS6_Course.html'
+        : course.slug.includes('ac_') ? 'AC_Repair_Course.html'
+        : course.slug.includes('electrical') ? 'Electric_Wiring_Course.html'
+        : course.slug + '.html';
+
       return `
-        <article class="course-card ${highlight ? "highlight" : ""}">
+        <article class="course-card ${highlight ? 'highlight' : ''} ${isEV ? 'coming-soon' : ''}" 
+                 ${isEV ? 'onclick="window.handleEVClick()"' : ''}>
           <div class="course-head">
-            <div class="course-icon" aria-hidden="true">⚡</div>
-            <div class="course-copy">
-              <h3>${course.title || course.name}</h3>
+            <div class="course-icon" aria-hidden="true">${isEV ? '⚡' : '⚡'}</div>
+            <div class="course-copy" style="flex:1;min-width:0;">
+              <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                ${course.title || course.name}
+                ${isEV ? '<span class="coming-soon-badge">🚧 Coming Soon</span>' : ''}
+              </h3>
               <p>${course.description}</p>
             </div>
           </div>
@@ -871,16 +922,19 @@
           <div class="progress-wrap">
             <div class="progress-top">
               <span>Progress</span>
-              <strong>${progress}%</strong>
+              <strong>${isEV ? '—' : progress + '%'}</strong>
             </div>
             <div class="bar">
-              <div class="bar-fill" style="width:${progress}%"></div>
+              <div class="bar-fill" style="width:${isEV ? 0 : progress}%"></div>
             </div>
           </div>
 
           <div class="course-actions">
-            ${isCompleted ? `<button class="chip-action success" type="button" onclick="window.handleCertificate('${course.slug}', this)">🏅 Download Certificate</button>` : ''}
-            <a class="link-action" style="${!isCompleted ? 'width:100%;text-align:center;' : ''}" href="${course.slug.includes('bs6') ? 'BS6_Course.html' : course.slug.includes('ac_') ? 'AC_Repair_Course.html' : course.slug.includes('electrical') ? 'Electric_Wiring_Course.html' : course.slug.includes('ev_') ? 'ev_course.html' : course.slug + '.html'}?id=${course.slug}">${rightAction}</a>
+            ${isEV
+              ? `<button class="btn-coming-soon" disabled aria-disabled="true">Coming Soon</button>`
+              : `${isCompleted ? `<button class="chip-action success" type="button" onclick="window.handleCertificate('${course.slug}', this); event.stopPropagation();">🏅 Download Certificate</button>` : ''}
+                 <a class="link-action" style="${!isCompleted ? 'width:100%;text-align:center;' : ''}" href="${courseUrl}?id=${course.slug}" onclick="event.stopPropagation();">${rightAction}</a>`
+            }
           </div>
         </article>
       `;
@@ -957,6 +1011,10 @@
         btn.disabled = false;
       }, 1000);
     }
+  };
+
+  window.handleEVClick = function() {
+    alert("🚀 EV Repair Basics course is coming soon! \nWe are working hard to bring you the best learning experience. Stay tuned!");
   };
 
 

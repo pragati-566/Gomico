@@ -75,22 +75,26 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid phone number' });
     }
 
+    const authMode = process.env.AUTH_MODE || 'real_otp';
+    const isFixedOTP = authMode === 'fixed_otp' || TEST_MODE;
+
     // Generate OTP
-    const otp = TEST_MODE ? "1234" : generateOTP();
+    const otp = isFixedOTP ? (process.env.FIXED_OTP || "1234") : generateOTP();
 
     // Save OTP to database
     await OTP.findOneAndDelete({ phone }); // Remove any existing OTP
     const otpDoc = new OTP({ phone, otp });
     await otpDoc.save();
 
-    if (TEST_MODE) {
-      return res.json({ success: true, otp: "1234", message: 'TEST_MODE: OTP sent successfully' });
+    if (isFixedOTP) {
+      // Don't send real SMS, just return success
+      return res.json({ success: true, message: 'OTP sent successfully (Fixed OTP Mode)' });
     }
 
     // Send OTP via WhatsApp
     try {
       await sendWhatsAppOTP(phone, otp);
-      res.json({ message: 'OTP sent successfully' });
+      res.json({ success: true, message: 'OTP sent successfully' });
     } catch (error) {
       console.error('Failed to send WhatsApp OTP:', error);
       res.status(500).json({ error: 'Failed to send OTP' });

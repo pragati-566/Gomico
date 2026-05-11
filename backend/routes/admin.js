@@ -248,13 +248,13 @@ router.put('/users/:userId/status', authenticateAdmin, async (req, res) => {
 });
 
 // Export users data
-router.get('/export', authenticateAdmin, async (req, res) => {
+router.post('/export', authenticateAdmin, async (req, res) => {
   try {
-    const { format = 'csv', password } = req.query;
+    const { format = 'csv', password } = req.body;
 
-    const exportHash = process.env.EXPORT_PASSWORD_HASH;
+    const exportHash = process.env.EXPORT_DATA_PASSWORD_HASH;
     if (!exportHash) {
-       console.error('CRITICAL: EXPORT_PASSWORD_HASH is not set in .env');
+       console.error('CRITICAL: EXPORT_DATA_PASSWORD_HASH is not set in .env');
        return res.status(500).json({ error: 'Server misconfiguration' });
     }
 
@@ -320,14 +320,13 @@ router.post('/verify-export-password', authenticateAdmin, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Password is required' });
     }
 
-    const exportPassword = process.env.EXPORT_PASSWORD;
-    if (!exportPassword) {
-      console.error('CRITICAL: EXPORT_PASSWORD is not set in .env');
+    const exportHash = process.env.EXPORT_DATA_PASSWORD_HASH;
+    if (!exportHash) {
+      console.error('CRITICAL: EXPORT_DATA_PASSWORD_HASH is not set in .env');
       return res.status(500).json({ success: false, error: 'Server misconfiguration' });
     }
 
-    // Constant-time string comparison to prevent timing attacks
-    const isValid = password === exportPassword;
+    const isValid = await bcrypt.compare(password, exportHash);
 
     if (isValid) {
       return res.json({ success: true });

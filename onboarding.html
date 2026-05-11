@@ -302,7 +302,7 @@
           <input id="phone-number" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="12" placeholder="000 000 0000" />
         </label>
 
-        <button class="btn" id="send-otp" disabled>OTP प्राप्त करें</button>
+        <button class="btn" id="send-otp" disabled>Continue</button>
       </section>
 
       <section class="card panel" id="step-otp">
@@ -594,7 +594,8 @@
 
   function updatePhone(){
     phoneInput.value = formatPhone(phoneInput.value);
-    sendOtpBtn.disabled = phoneInput.value.replace(/\D/g, "").length !== 10;
+    const digits = phoneInput.value.replace(/\D/g, "");
+    sendOtpBtn.disabled = !(digits.length === 10 && /^[6-9]/.test(digits));
   }
 
   function updateOtp(){
@@ -681,11 +682,16 @@
       sendOtpBtn.disabled = true;
       sendOtpBtn.textContent = "Sending...";
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ phone }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -698,10 +704,14 @@
       }
     } catch (error) {
       console.error('Send OTP error:', error);
-      alert('Failed to send OTP. Please try again.');
+      if (error.name === 'AbortError') {
+        alert('Request timed out. Please check your connection and try again.');
+      } else {
+        alert('Failed to send OTP. Please try again.');
+      }
     } finally {
       sendOtpBtn.disabled = false;
-      sendOtpBtn.textContent = "OTP प्राप्त करें";
+      sendOtpBtn.textContent = "Continue";
     }
   });
 
@@ -734,11 +744,16 @@
       verifyOtpBtn.disabled = true;
       verifyOtpBtn.textContent = "Verifying...";
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp })
+        body: JSON.stringify({ phone, otp }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -759,7 +774,11 @@
       }
     } catch (error) {
       console.error('Verify OTP error:', error);
-      alert('Failed to verify OTP. Please try again.');
+      if (error.name === 'AbortError') {
+        alert('Request timed out. Please check your connection and try again.');
+      } else {
+        alert('Failed to verify OTP. Please try again.');
+      }
     } finally {
       verifyOtpBtn.disabled = false;
       verifyOtpBtn.textContent = "Verify करें";
@@ -771,11 +790,16 @@
     const phone = phoneInput.value.replace(/\D/g, "");
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ phone }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -786,7 +810,11 @@
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      alert('Failed to resend OTP. Please try again.');
+      if (error.name === 'AbortError') {
+        alert('Request timed out. Please check your connection and try again.');
+      } else {
+        alert('Failed to resend OTP. Please try again.');
+      }
     }
   });
 

@@ -756,7 +756,7 @@
     <header class="topbar">
       <div class="container topbar-inner">
         <a class="brand" href="/">
-          <img class="brand-logo" src="assets/images/logo-gomico.svg" alt="GOMICO">
+          <img class="brand-logo" src="/assets/images/logo-gomico.svg" alt="GOMICO">
         </a>
 
         <div class="topbar-center">
@@ -1434,8 +1434,13 @@
 
   // Step 2: Once password is verified, proceed with the actual export download.
   async function downloadExport(format) {
-    const res = await fetch(`/api/admin/export?format=${format}&password=${encodeURIComponent(exportPassword.value)}`, {
-      headers: { 'Authorization': `Bearer ${adminToken}` }
+    const res = await fetch(`/api/admin/export`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ format, password: exportPassword.value })
     });
 
     if (!res.ok) {
